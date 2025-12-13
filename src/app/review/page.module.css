@@ -1,0 +1,274 @@
+.reviewPage {
+    max-width: 1400px;
+}
+
+.periodNav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    padding: var(--space-md);
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-glass);
+}
+
+.navBtn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-glass);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+}
+
+.navBtn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-primary);
+}
+
+.todayBtn {
+    padding: var(--space-sm) var(--space-md);
+    background: var(--accent-gradient);
+    border: none;
+    border-radius: var(--radius-md);
+    color: white;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    transition: all var(--transition-fast);
+}
+
+.todayBtn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.periodLabel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    min-width: 220px;
+    padding: var(--space-sm) var(--space-lg);
+    padding-right: var(--space-2xl);
+    background: var(--bg-glass);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+}
+
+.periodLabel:hover {
+    border-color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.calendarIcon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--accent-primary);
+}
+
+.periodTitle {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.periodRange {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+}
+
+.statsRow {
+    display: flex;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.statBadge {
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-glass);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}
+
+.emotionMini {
+    display: flex;
+    gap: var(--space-md);
+    margin-left: auto;
+}
+
+.emotionMiniItem {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--bg-glass);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+}
+
+.mainGrid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: var(--space-xl);
+    margin-bottom: var(--space-xl);
+}
+
+.chartSection {
+    display: flex;
+    flex-direction: column;
+}
+
+.metricFilters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+}
+
+.metricFilter {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-md);
+    font-size: var(--font-size-sm);
+    background: var(--bg-glass);
+    border: 2px solid transparent;
+    border-radius: var(--radius-full);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+}
+
+.metricFilter:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.metricFilter.active {
+    color: var(--text-primary);
+    background: rgba(var(--metric-color), 0.1);
+}
+
+.summarySection {
+    display: flex;
+    flex-direction: column;
+}
+
+.avgScoresList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.avgScoreItem {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.avgScoreHeader {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--font-size-sm);
+}
+
+.avgScoreValue {
+    font-weight: 600;
+}
+
+.insight {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.insight h4 {
+    margin-bottom: var(--space-sm);
+    font-size: var(--font-size-sm);
+}
+
+.insight p {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.insight strong {
+    color: var(--accent-primary);
+}
+
+.diariesSection {
+    margin-top: var(--space-xl);
+}
+
+.sectionTitle {
+    margin-bottom: var(--space-lg);
+}
+
+.diariesGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--space-lg);
+    max-height: 800px;
+    overflow-y: auto;
+    padding-right: var(--space-sm);
+}
+
+.noData {
+    text-align: center;
+    padding: var(--space-2xl);
+    color: var(--text-muted);
+}
+
+@media (max-width: 1024px) {
+    .mainGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .periodNav {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 768px) {
+    .metricFilters {
+        justify-content: center;
+    }
+
+    .diariesGrid {
+        grid-template-columns: 1fr;
+        max-height: none;
+    }
+
+    .periodNav {
+        gap: var(--space-sm);
+    }
+
+    .periodLabel {
+        order: -1;
+        width: 100%;
+        margin-bottom: var(--space-sm);
+    }
+}

@@ -1,0 +1,54 @@
+.diaryCard {
+    cursor: pointer;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-md);
+}
+
+.date {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}
+
+.emoji {
+    font-size: var(--font-size-xl);
+}
+
+.content {
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin-bottom: var(--space-md);
+}
+
+.summary {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-glass);
+    border-radius: var(--radius-sm);
+    border-left: 2px solid var(--accent-primary);
+    margin-bottom: var(--space-md);
+}
+
+.metrics {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+
+.metricBadge {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--bg-glass);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+}

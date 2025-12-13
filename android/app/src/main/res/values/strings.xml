@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">AiDiary</string>
+    <string name="title_activity_main">AiDiary</string>
+    <string name="package_name">com.diary.ai</string>
+    <string name="custom_url_scheme">com.diary.ai</string>
+</resources>

@@ -1,0 +1,109 @@
+.title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: var(--font-size-xl);
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.section {
+    margin-bottom: var(--space-xl);
+}
+
+.sectionTitle {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-md);
+}
+
+.summary {
+    color: var(--text-primary);
+    line-height: 1.7;
+    background: var(--bg-glass);
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    border-left: 3px solid var(--accent-primary);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-xl);
+    margin-bottom: var(--space-xl);
+}
+
+.emotionSection,
+.metricsSection {
+    background: var(--bg-glass);
+    padding: var(--space-lg);
+    border-radius: var(--radius-md);
+}
+
+.emotionLabels {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-lg);
+    margin-top: var(--space-md);
+    font-size: var(--font-size-sm);
+}
+
+.positive {
+    color: var(--positive);
+}
+
+.negative {
+    color: var(--negative);
+}
+
+.neutral {
+    color: var(--neutral);
+}
+
+.metricsList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.metricItem {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.metricHeader {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--font-size-sm);
+}
+
+.metricScore {
+    font-weight: 600;
+    color: var(--accent-primary);
+}
+
+.feedbackSection {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+    padding: var(--space-lg);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.feedback {
+    color: var(--text-primary);
+    line-height: 1.8;
+    font-size: var(--font-size-base);
+}
+
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
