@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { PenLine, Image, Sparkles, Settings, Save } from 'lucide-react';
+import { PenLine, Image, Sparkles, Settings, Save, ClipboardList } from 'lucide-react';
 import { useDiary } from '@/context/DiaryContext';
 import { aiPersonalities, metrics } from '@/lib/mockData';
 import AnalysisModal from '@/components/AnalysisModal';
@@ -22,7 +22,7 @@ function WriteContent() {
     const [images, setImages] = useState([]);
     const fileInputRef = useRef(null);
 
-    // 수정 모드일 때 데이터 로드
+    // 수정 모드일 때 데이터 로드 또는 URL 파라미터로 내용 수신
     useEffect(() => {
         if (editId && diaries.length > 0) {
             const id = parseInt(editId);
@@ -32,8 +32,16 @@ function WriteContent() {
                 setImages(diary.images || []);
                 setPersonality(diary.personality || settings.personality);
             }
+        } else {
+            // Obsidian 등 외부에서 파라미터로 전달된 경우
+            const externalContent = searchParams.get('content');
+            if (externalContent) {
+                setContent(externalContent);
+                // URL 파라미터를 사용한 후에는 지우는 것이 좋지만, 
+                // Next.js 클라이언트 사이드에서 간단히 상태만 채워넣음
+            }
         }
-    }, [editId, diaries, settings.personality]);
+    }, [editId, diaries, settings.personality, searchParams]);
 
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files);
@@ -59,6 +67,26 @@ function WriteContent() {
 
     const handleFileBtnClick = () => {
         fileInputRef.current?.click();
+    };
+
+    const handleClipboardImport = async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            if (text) {
+                if (content.trim()) {
+                    if (confirm('이미 작성된 내용이 있습니다. 덮어쓰시겠습니까? (취소 시 기존 내용 뒤에 추가됩니다)')) {
+                        setContent(text);
+                    } else {
+                        setContent(prev => prev + '\n\n' + text);
+                    }
+                } else {
+                    setContent(text);
+                }
+            }
+        } catch (err) {
+            console.error('Clipboard read failed:', err);
+            alert('클립보드 내용을 가져오는데 실패했습니다. 브라우저 권한을 확인해주세요.');
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -172,6 +200,10 @@ function WriteContent() {
                                 <button type="button" className="btn btn-secondary" onClick={handleFileBtnClick}>
                                     <Image size={16} />
                                     사진 첨부
+                                </button>
+                                <button type="button" className="btn btn-secondary" onClick={handleClipboardImport}>
+                                    <ClipboardList size={16} />
+                                    클립보드 가져오기
                                 </button>
                                 <button
                                     type="submit"

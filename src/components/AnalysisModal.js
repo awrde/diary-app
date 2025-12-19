@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { useDiary } from '@/context/DiaryContext';
-import { X, Sparkles, TrendingUp, MessageCircle, Trash2, CheckCircle, AlertCircle, RotateCcw } from 'lucide-react';
+import { X, Sparkles, TrendingUp, MessageCircle, Trash2, CheckCircle, AlertCircle, RotateCcw, Copy, Download, ExternalLink, Hash } from 'lucide-react';
+import { convertToMarkdown, copyToClipboard, downloadMarkdown, openInObsidian } from '@/lib/obsidianUtils';
 import EmotionRadar from './EmotionRadar';
 import styles from './AnalysisModal.module.css';
 import { metrics } from '@/lib/mockData';
@@ -12,6 +13,7 @@ import { metrics } from '@/lib/mockData';
 export default function AnalysisModal({ diary, onClose }) {
     const [mounted, setMounted] = useState(false);
     const [isConfirming, setIsConfirming] = useState(false); // 삭제 확인 상태
+    const [copyStatus, setCopyStatus] = useState(false);
     const router = useRouter();
     const { deleteDiary } = useDiary();
 
@@ -63,6 +65,27 @@ export default function AnalysisModal({ diary, onClose }) {
         e.stopPropagation();
         e.preventDefault();
         router.push(`/write?edit=${diary.id}`);
+    };
+
+    const handleCopyMarkdown = async () => {
+        const md = convertToMarkdown(diary, metrics);
+        const success = await copyToClipboard(md);
+        if (success) {
+            setCopyStatus(true);
+            setTimeout(() => setCopyStatus(false), 2000);
+        }
+    };
+
+    const handleDownloadMarkdown = () => {
+        const md = convertToMarkdown(diary, metrics);
+        const filename = `diary-${diary.date}.md`;
+        downloadMarkdown(filename, md);
+    };
+
+    const handleOpenInObsidian = () => {
+        const md = convertToMarkdown(diary, metrics);
+        const filename = `diary-${diary.date}.md`;
+        openInObsidian(filename, md);
     };
 
     const modalContent = (
@@ -134,6 +157,27 @@ export default function AnalysisModal({ diary, onClose }) {
                     </h3>
                     <div className={styles.feedback}>
                         {analysis.feedback}
+                    </div>
+                </div>
+
+                <div className={styles.obsidianSection}>
+                    <h3 className={styles.sectionTitle}>
+                        <Hash size={18} />
+                        Obsidian 연동
+                    </h3>
+                    <div className={styles.obsidianButtons}>
+                        <button type="button" className={styles.obsidianBtn} onClick={handleCopyMarkdown}>
+                            {copyStatus ? <CheckCircle size={16} /> : <Copy size={16} />}
+                            {copyStatus ? '복사 완료!' : '마크다운 복사'}
+                        </button>
+                        <button type="button" className={styles.obsidianBtn} onClick={handleDownloadMarkdown}>
+                            <Download size={16} />
+                            MD 파일 다운로드
+                        </button>
+                        <button type="button" className={styles.obsidianBtn} onClick={handleOpenInObsidian}>
+                            <ExternalLink size={16} />
+                            옵시디언으로 열기
+                        </button>
                     </div>
                 </div>
 

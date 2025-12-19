@@ -143,6 +143,29 @@ export function DiaryProvider({ children }) {
         setSettings(defaultSet);
     };
 
+    const importAllData = async (data) => {
+        try {
+            if (!data.diaries || !Array.isArray(data.diaries)) throw new Error('Invalid backup data');
+
+            await db.diaries.clear();
+            await db.diaries.bulkAdd(data.diaries);
+
+            if (data.settings) {
+                await db.settings.put({ ...data.settings, id: 'default' });
+                setSettings(data.settings);
+            }
+            return true;
+        } catch (err) {
+            console.error('Import failed:', err);
+            return false;
+        }
+    };
+
+    const clearAllData = async () => {
+        await db.diaries.clear();
+        // Keep settings but allow resetting them separately
+    };
+
     return (
         <DiaryContext.Provider value={{
             diaries: safeDiaries,
@@ -154,7 +177,9 @@ export function DiaryProvider({ children }) {
             getLatestDiary,
             getWeeklyDiaries,
             getWeightedScore,
-            resetToMockData
+            resetToMockData,
+            importAllData,
+            clearAllData
         }}>
             {children}
         </DiaryContext.Provider>
