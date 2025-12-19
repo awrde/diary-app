@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { Calendar, BarChart3, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useDiary } from '@/context/DiaryContext';
 import { metrics } from '@/lib/mockData';
@@ -287,9 +288,9 @@ export default function ReviewPage() {
                 <div className={styles.statBadge}>
                     📝 이 기간 {filteredDiaries.length}개 기록
                 </div>
-                <div className={styles.statBadge}>
+                <Link href="/diaries" className={`${styles.statBadge} ${styles.clickable}`}>
                     📊 전체 {diaries.length}개 일기
-                </div>
+                </Link>
                 <div className={styles.emotionMini}>
                     {Object.entries(emotionStats).map(([key, count]) => (
                         count > 0 && (

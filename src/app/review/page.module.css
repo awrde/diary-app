@@ -107,6 +107,20 @@
     border-radius: var(--radius-full);
     font-size: var(--font-size-sm);
     color: var(--text-secondary);
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: all var(--transition-fast);
+}
+
+.statBadge.clickable {
+    cursor: pointer;
+}
+
+.statBadge.clickable:hover {
+    color: var(--text-primary);
+    border-color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.1);
+    transform: translateY(-1px);
 }
 
 .emotionMini {

@@ -13,6 +13,19 @@
   display: flex;
   align-items: center;
   gap: var(--space-lg);
+  text-decoration: none;
+  color: inherit;
+}
+
+.statCard.clickable {
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.statCard.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-color: var(--accent-primary);
 }
 
 .statIcon {

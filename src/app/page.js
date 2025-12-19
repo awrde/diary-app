@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { TrendingUp, Calendar, Sparkles, ArrowRight, Laugh, Smile, Frown, Meh } from 'lucide-react';
 import { useDiary } from '@/context/DiaryContext';
 import MetricChart from '@/components/MetricChart';
@@ -59,7 +60,7 @@ export default function Dashboard() {
       </header>
 
       <div className={styles.statsGrid}>
-        <div className={`card ${styles.statCard}`}>
+        <Link href="/diaries" className={`card ${styles.statCard} ${styles.clickable}`}>
           <div className={styles.statIcon} style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
             <Calendar size={24} />
           </div>
@@ -67,7 +68,7 @@ export default function Dashboard() {
             <span className={styles.statValue}>{diaries.length}</span>
             <span className={styles.statLabel}>총 일기 수</span>
           </div>
-        </div>
+        </Link>
 
         <div className={`card ${styles.statCard}`}>
           <div className={styles.statIcon} style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
