@@ -87,10 +87,31 @@
     display: flex;
     align-items: center;
     gap: var(--space-xs);
-    padding: var(--space-xs) var(--space-sm);
-    background: var(--bg-glass);
+    padding: var(--space-xs) var(--space-md);
+    background: var(--bg-card);
+    border: 1px solid var(--border-glass);
     border-radius: var(--radius-full);
     font-size: var(--font-size-xs);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-secondary);
+}
+
+.emotionMiniItem:hover {
+    background: var(--bg-glass);
+    transform: translateY(-1px);
+    border-color: var(--accent-primary);
+}
+
+.emotionMiniItem.active {
+    background: var(--accent-primary);
+    color: white;
+    border-color: var(--accent-primary);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+.allEmotion {
+    border: 1px dashed var(--border-glass);
 }
 
 .diariesGrid {
@@ -110,6 +131,49 @@
     text-align: center;
 }
 
+.floatingScroll {
+    position: fixed;
+    bottom: var(--space-xl);
+    right: var(--space-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
+
+.floatingScroll.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.floatButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-full);
+    color: var(--text-primary);
+    cursor: pointer;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+}
+
+.floatButton:hover {
+    background: var(--accent-primary);
+    color: white;
+    border-color: var(--accent-primary);
+    transform: scale(1.1);
+}
+
 @media (max-width: 768px) {
     .toolbar {
         flex-direction: column;
@@ -118,9 +182,20 @@
     .filters {
         width: 100%;
         justify-content: space-between;
+        flex-wrap: wrap;
     }
 
     .diariesGrid {
         grid-template-columns: 1fr;
+    }
+
+    .floatingScroll {
+        bottom: var(--space-lg);
+        right: var(--space-lg);
+    }
+
+    .floatButton {
+        width: 44px;
+        height: 44px;
     }
 }

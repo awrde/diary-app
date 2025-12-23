@@ -17,6 +17,14 @@
     color: var(--text-secondary);
 }
 
+.weatherIcon {
+    display: flex;
+    align-items: center;
+    margin-left: 4px;
+    color: var(--accent-primary);
+    opacity: 0.8;
+}
+
 .emoji {
     font-size: var(--font-size-xl);
 }

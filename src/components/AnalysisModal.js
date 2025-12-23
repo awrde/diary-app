@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { useDiary } from '@/context/DiaryContext';
-import { X, Sparkles, TrendingUp, MessageCircle, Trash2, CheckCircle, AlertCircle, RotateCcw, Copy, Download, ExternalLink, Hash } from 'lucide-react';
+import { X, Sparkles, TrendingUp, MessageCircle, Trash2, CheckCircle, AlertCircle, RotateCcw, Copy, Download, ExternalLink, Hash, Sun, Cloud, CloudRain, Snowflake, Wind, Moon } from 'lucide-react';
 import { convertToMarkdown, copyToClipboard, downloadMarkdown, openInObsidian } from '@/lib/obsidianUtils';
 import EmotionRadar from './EmotionRadar';
 import styles from './AnalysisModal.module.css';
@@ -15,7 +15,7 @@ export default function AnalysisModal({ diary, onClose }) {
     const [isConfirming, setIsConfirming] = useState(false); // 삭제 확인 상태
     const [copyStatus, setCopyStatus] = useState(false);
     const router = useRouter();
-    const { deleteDiary } = useDiary();
+    const { deleteDiary, settings } = useDiary();
 
     useEffect(() => {
         setMounted(true);
@@ -99,6 +99,12 @@ export default function AnalysisModal({ diary, onClose }) {
                     <h2 className={styles.title}>
                         <Sparkles size={24} />
                         AI 분석 결과
+                        {settings.debugMode && (
+                            <span className={styles.debugBadge}>
+                                <AlertCircle size={14} />
+                                Debug ON
+                            </span>
+                        )}
                     </h2>
                     <button type="button" className="modal-close" onClick={onClose}>
                         <X size={18} />
@@ -111,6 +117,30 @@ export default function AnalysisModal({ diary, onClose }) {
                         오늘의 요약
                     </h3>
                     <p className={styles.summary}>{analysis.summary}</p>
+                </div>
+
+                <div className={styles.diaryMeta}>
+                    <div className={styles.metaItem}>
+                        <label>오늘의 날씨</label>
+                        <div className={styles.weatherInfo}>
+                            {diary.weather === '맑음' && <Sun size={18} className={styles.weatherIcon} />}
+                            {diary.weather === '흐림' && <Cloud size={18} className={styles.weatherIcon} />}
+                            {diary.weather === '비' && <CloudRain size={18} className={styles.weatherIcon} />}
+                            {diary.weather === '눈' && <Snowflake size={18} className={styles.weatherIcon} />}
+                            {diary.weather === '바람' && <Wind size={18} className={styles.weatherIcon} />}
+                            <span>{diary.weather || '기록 없음'}</span>
+                        </div>
+                    </div>
+                    <div className={styles.metaItem}>
+                        <label>수면 시간</label>
+                        <div className={styles.sleepInfo}>
+                            <Moon size={18} className={styles.sleepIcon} />
+                            <span>
+                                {diary.sleepStart && diary.sleepEnd ? `${diary.sleepStart} ~ ${diary.sleepEnd} ` : ''}
+                                (<strong>{diary.sleepHours || 0}시간</strong>)
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
                 <div className={styles.grid}>
@@ -180,6 +210,26 @@ export default function AnalysisModal({ diary, onClose }) {
                         </button>
                     </div>
                 </div>
+
+                {settings.debugMode && analysis._debug && (
+                    <div className={styles.debugSection}>
+                        <div className={styles.debugHeader}>
+                            <h3 className={styles.sectionTitle}>
+                                <AlertCircle size={18} />
+                                디버그 정보 (개발용)
+                            </h3>
+                            <span className={styles.debugHint}>※ 분석 모달 하단에 자동으로 표시됩니다.</span>
+                        </div>
+                        <div className={styles.debugItem}>
+                            <div className={styles.debugLabel}>SENT PROMPT (Gemini에게 보낸 질문):</div>
+                            <pre className={styles.debugCode}>{analysis._debug.prompt}</pre>
+                        </div>
+                        <div className={styles.debugItem} style={{ marginTop: '1.5rem' }}>
+                            <div className={styles.debugLabel}>RAW RESPONSE (Gemini가 보낸 원본 응답):</div>
+                            <pre className={styles.debugCode}>{analysis._debug.rawResponse}</pre>
+                        </div>
+                    </div>
+                )}
 
                 <div style={{ display: 'flex', gap: '10px', marginTop: 'var(--space-lg)', position: 'relative' }}>
                     {isConfirming ? (

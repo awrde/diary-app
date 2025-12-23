@@ -4,7 +4,7 @@
 
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: var(--space-lg);
   margin-bottom: var(--space-xl);
 }
@@ -15,6 +15,54 @@
   gap: var(--space-lg);
   text-decoration: none;
   color: inherit;
+  position: relative;
+  transition: all var(--transition-normal);
+  overflow: hidden;
+  /* Ensure tooltip stays within card corners */
+}
+
+.statCard.active {
+  border-color: var(--accent-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.tooltip {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md);
+  background: rgba(15, 15, 26, 0.85);
+  /* Matches --bg-primary with transparency */
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.6;
+  z-index: 100;
+  animation: fadeIn 0.25s ease-out;
+  pointer-events: none;
+}
+
+[data-theme='dark'] .tooltip {
+  background: rgba(15, 15, 26, 0.9);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .statCard.clickable {

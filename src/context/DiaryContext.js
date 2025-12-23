@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
 import { mockDiaries, defaultWeights } from '@/lib/mockData';
+import { analyzeDiaryWithGemini } from '@/lib/gemini';
 
 const DiaryContext = createContext();
 
@@ -15,8 +16,16 @@ export function DiaryProvider({ children }) {
     // 설정 상태 관리
     const [settings, setSettings] = useState({
         personality: 'warm_companion',
-        weights: defaultWeights
+        debugMode: false,
+        geminiApiKey: '',
+        selectedModel: 'gemini-2.0-flash',
+        plan: 'free',
+        forceLimit: false,
+        weights: defaultWeights // weights 필드 명시적으로 추가
     });
+
+    // 개발자 전역 API 키 (실제 배포 시 환경 변수나 보안 저장소로 관리 필요)
+    const DEVELOPER_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || '';
 
     // DB에서 설정 로드되면 동기화
     useEffect(() => {
@@ -52,7 +61,11 @@ export function DiaryProvider({ children }) {
                     await db.settings.put({
                         id: 'default',
                         personality: 'warm_companion',
-                        weights: defaultWeights
+                        weights: defaultWeights,
+                        debugMode: false,
+                        geminiApiKey: '',
+                        selectedModel: 'gemini-2.0-flash',
+                        plan: 'free'
                     });
                 }
             } catch (err) {
@@ -62,12 +75,64 @@ export function DiaryProvider({ children }) {
         initDB();
     }, []);
 
+    const checkUsageLimit = (allDiaries) => {
+        if (settings.forceLimit) {
+            return {
+                canWrite: false,
+                reason: `[테스트] 최근 2개월간 최대 작성 가능 횟수(100회)를 초과했습니다.`,
+                count: 100
+            };
+        }
+        if (!allDiaries || allDiaries.length === 0) return { canWrite: true };
+
+        const MAX_FREE_DIARIES = 100;
+        const TWO_MONTHS_MS = 2 * 30 * 24 * 60 * 60 * 1000;
+        const now = new Date();
+        const twoMonthsAgo = new Date(now.getTime() - TWO_MONTHS_MS);
+
+        // 최근 2개월간 작성된 일기 필터링
+        const recentDiaries = allDiaries.filter(d => new Date(d.date) >= twoMonthsAgo);
+
+        if (recentDiaries.length >= MAX_FREE_DIARIES) {
+            return {
+                canWrite: false,
+                reason: `최근 2개월간 최대 작성 가능 횟수(${MAX_FREE_DIARIES}회)를 초과했습니다.`,
+                count: recentDiaries.length
+            };
+        }
+
+        return { canWrite: true, count: recentDiaries.length };
+    };
+
     const addDiary = async (diary) => {
+        const usage = checkUsageLimit(diaries);
+        let analysis;
+        const effectiveApiKey = settings.geminiApiKey || DEVELOPER_API_KEY;
+
+        if (settings.plan === 'free' && !usage.canWrite) {
+            analysis = generateMockAnalysis(diary.content, { weather: diary.weather, sleepHours: diary.sleepHours });
+        } else if (effectiveApiKey) {
+            try {
+                analysis = await analyzeDiaryWithGemini(
+                    diary.content,
+                    effectiveApiKey,
+                    diary.personality || settings.personality,
+                    settings.selectedModel,
+                    { weather: diary.weather, sleepHours: diary.sleepHours }
+                );
+            } catch (err) {
+                console.error('Gemini analysis failed, falling back to mock', err);
+                analysis = generateMockAnalysis(diary.content, { weather: diary.weather, sleepHours: diary.sleepHours });
+            }
+        } else {
+            analysis = generateMockAnalysis(diary.content, { weather: diary.weather, sleepHours: diary.sleepHours });
+        }
+
         const newDiary = {
             id: Date.now(),
             date: new Date().toISOString().split('T')[0],
             ...diary,
-            analysis: generateMockAnalysis(diary.content)
+            analysis
         };
         await db.diaries.add(newDiary);
         return newDiary;
@@ -80,7 +145,32 @@ export function DiaryProvider({ children }) {
         if (!targetDiary) return null;
 
         const contentToAnalyze = updates.content || targetDiary.content;
-        const newAnalysis = generateMockAnalysis(contentToAnalyze);
+        const personalityToUse = updates.personality || targetDiary.personality || settings.personality;
+        const weatherToUse = updates.weather !== undefined ? updates.weather : targetDiary.weather;
+        const sleepToUse = updates.sleepHours !== undefined ? updates.sleepHours : targetDiary.sleepHours;
+
+        let newAnalysis;
+        const effectiveApiKey = settings.geminiApiKey || DEVELOPER_API_KEY;
+
+        const usage = checkUsageLimit(diaries);
+        if (settings.plan === 'free' && !usage.canWrite) {
+            newAnalysis = generateMockAnalysis(contentToAnalyze, { weather: weatherToUse, sleepHours: sleepToUse });
+        } else if (effectiveApiKey) {
+            try {
+                newAnalysis = await analyzeDiaryWithGemini(
+                    contentToAnalyze,
+                    effectiveApiKey,
+                    personalityToUse,
+                    settings.selectedModel,
+                    { weather: weatherToUse, sleepHours: sleepToUse }
+                );
+            } catch (err) {
+                console.error('Gemini analysis failed, falling back to mock', err);
+                newAnalysis = generateMockAnalysis(contentToAnalyze, { weather: weatherToUse, sleepHours: sleepToUse });
+            }
+        } else {
+            newAnalysis = generateMockAnalysis(contentToAnalyze, { weather: weatherToUse, sleepHours: sleepToUse });
+        }
 
         const updatedDiary = {
             ...targetDiary,
@@ -179,7 +269,8 @@ export function DiaryProvider({ children }) {
             getWeightedScore,
             resetToMockData,
             importAllData,
-            clearAllData
+            clearAllData,
+            checkUsageLimit
         }}>
             {children}
         </DiaryContext.Provider>
@@ -198,7 +289,7 @@ export function useDiary() {
 // AI Analysis Logic (Preserved)
 // ============================================
 
-function generateMockAnalysis(content) {
+function generateMockAnalysis(content, extraData = {}) {
     const positiveWords = [
         '좋', '행복', '성공', '즐거', '기쁘', '감사', '사랑', '뿌듯', '상쾌', '만족',
         '신나', '최고', '훌륭', '보람', '기대', '감동', '편안', '아늑', '활기', '열정',
@@ -285,31 +376,48 @@ function generateMockAnalysis(content) {
             hobby: scores.hobby > 0 ? Math.min(5, baseScore + 1) : baseScore,
             work: scores.work > 0 ? Math.min(5, baseScore + 1) : baseScore
         },
-        feedback: generateFeedback(positive, negative, content, dominantCategory)
+        feedback: generateFeedback(positive, negative, content, dominantCategory, extraData)
     };
 }
 
-function generateFeedback(positive, negative, content, category) {
+function generateFeedback(positive, negative, content, category, extraData = {}) {
+    let feedback = '';
+    const { weather, sleepHours } = extraData;
+
+    if (weather === '비' || weather === 'Rainy') {
+        feedback += '비가 오는 날이네요. 차분한 빗소리와 함께 마음을 정리하기 좋은 시간입니다. ';
+    } else if (weather === '눈' || weather === 'Snowy') {
+        feedback += '새하얀 눈이 내리는 풍경이 마음을 설레게 하네요. ';
+    } else if (weather === '맑음' || weather === 'Sunny') {
+        feedback += '맑은 날씨 덕분에 기분까지 상쾌해지는 하루였을 것 같아요. ';
+    }
+
+    if (sleepHours && sleepHours < 6) {
+        feedback += '수면 시간이 다소 부족해 보여요. 오늘은 조금 더 일찍 잠자리에 들어 에너지를 충전해보는 건 어럴까요? ';
+    } else if (sleepHours && sleepHours >= 8) {
+        feedback += '충분한 수면을 취하셨군요! 개운한 몸과 마음이 글에서도 느껴집니다. ';
+    }
+
     if (category === 'money') {
-        return '경제적 자유를 향한 꾸준한 관심과 노력이 돋보입니다. 등락에 일희일비하기보다 긴 호흡으로 자산을 운용해 나가는 지혜가 느껴집니다! 💰';
+        return feedback + '경제적 자유를 향한 꾸준한 관심과 노력이 돋보입니다. 등락에 일희일비하기보다 긴 호흡으로 자산을 운용해 나가는 지혜가 느껴집니다! 💰';
     }
     if (category === 'work' && negative > positive) {
-        return '업무로 인해 고단한 하루였군요. 성취도 중요하지만, 번아웃이 오지 않도록 적절한 휴식 밸런스를 챙기는 것도 능력입니다. 수고 많으셨어요!';
+        return feedback + '업무로 인해 고단한 하루였군요. 성취도 중요하지만, 번아웃이 오지 않도록 적절한 휴식 밸런스를 챙기는 것도 능력입니다. 수고 많으셨어요!';
     }
     if (category === 'health' && positive > negative) {
-        return '몸과 마음을 건강하게 가꾸는 모습이 아름답습니다. 오늘의 땀방울이 내일 더 활기찬 에너지가 되어 돌아올 거예요! 💪';
+        return feedback + '몸과 마음을 건강하게 가꾸는 모습이 아름답습니다. 오늘의 땀방울이 내일 더 활기찬 에너지가 되어 돌아올 거예요! 💪';
     }
 
     const balance = positive - negative;
 
-    if (balance >= 40) return '완벽에 가까운 하루네요! 긍정적인 에너지가 글 너머로도 전해집니다. 이 행복한 기분을 오래오래 간직하세요! 🎉';
-    if (balance >= 15) return '기분 좋은 하루를 보내셨군요. 일상 속의 소소한 즐거움들이 모여 삶을 더욱 풍요롭게 만듭니다. 내일도 기대해봐요! 😊';
-    if (positive >= 25 && negative >= 25) return '다사다난하고 치열한 하루였네요. 힘든 순간도 있었지만, 그 안에서 긍정적인 면을 찾아내려 노력한 당신이 정말 멋집니다. 👏';
-    if (Math.abs(balance) < 15 && positive < 25 && negative < 25) return '잔잔하고 평온한 하루였습니다. 특별한 사건은 없어도, 이런 안온한 날들이 마음의 근육을 단단하게 만들어줍니다. ☕';
-    if (balance <= -15 && balance > -40) return '마음이 조금 무거운 하루였나 봅니다. 오늘 같은 날은 스스로를 재촉하기보다, 잠시 멈춰 서서 내 마음을 돌보는 시간이 필요해요.';
-    if (balance <= -40) return '정말 고생 많으셨습니다. 오늘은 그 누구보다 당신 자신을 위로해줘야 하는 날이에요. 따뜻한 이불 속에서 푹 쉬면서 지친 마음을 달래주세요. 💙';
+    if (balance >= 40) return feedback + '완벽에 가까운 하루네요! 긍정적인 에너지가 글 너머로도 전해집니다. 이 행복한 기분을 오래오래 간직하세요! 🎉';
+    if (balance >= 15) return feedback + '기분 좋은 하루를 보내셨군요. 일상 속의 소소한 즐거움들이 모여 삶을 더욱 풍요롭게 만듭니다. 내일도 기대해봐요! 😊';
+    if (positive >= 25 && negative >= 25) return feedback + '다사다난하고 치열한 하루였네요. 힘든 순간도 있었지만, 그 안에서 긍정적인 면을 찾아내려 노력한 당신이 정말 멋집니다. 👏';
+    if (Math.abs(balance) < 15 && positive < 25 && negative < 25) return feedback + '잔잔하고 평온한 하루였습니다. 특별한 사건은 없어도, 이런 안온한 날들이 마음의 근육을 단단하게 만들어줍니다. ☕';
+    if (balance <= -15 && balance > -40) return feedback + '마음이 조금 무거운 하루였나 봅니다. 오늘 같은 날은 스스로를 재촉하기보다, 잠시 멈춰 서서 내 마음을 돌보는 시간이 필요해요.';
+    if (balance <= -40) return feedback + '정말 고생 많으셨습니다. 오늘은 그 누구보다 당신 자신을 위로해줘야 하는 날이에요. 따뜻한 이불 속에서 푹 쉬면서 지친 마음을 달래주세요. 💙';
 
-    return balance >= 0
+    return feedback + (balance >= 0
         ? '무난하게 잘 마무리된 하루네요. 내일은 오늘보다 조금 더 웃을 일이 많기를 바랍니다!'
-        : '조금 아쉬움이 남는 하루일 수 있지만, 내일은 새로운 기회가 기다리고 있습니다. 힘내세요!';
+        : '조금 아쉬움이 남는 하루일 수 있지만, 내일은 새로운 기회가 기다리고 있습니다. 힘내세요!');
 }

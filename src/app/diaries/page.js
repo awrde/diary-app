@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { Calendar, Search, Filter, ChevronDown } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { Calendar, Search, Filter, ChevronDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useDiary } from '@/context/DiaryContext';
 import DiaryCard from '@/components/DiaryCard';
 import AnalysisModal from '@/components/AnalysisModal';
@@ -33,6 +33,28 @@ export default function DiariesPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedMonth, setSelectedMonth] = useState('전체');
     const [sortOrder, setSortOrder] = useState('newest');
+    const [selectedEmotion, setSelectedEmotion] = useState('전체');
+    const [showScrollButtons, setShowScrollButtons] = useState(false);
+
+    // 스크롤 감지하여 버튼 표시 여부 결정
+    useEffect(() => {
+        const handleScroll = () => {
+            setShowScrollButtons(window.scrollY > 300);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const scrollToBottom = () => {
+        window.scrollTo({
+            top: document.documentElement.scrollHeight,
+            behavior: 'smooth'
+        });
+    };
 
     // 필터링 및 정렬된 일기 목록
     const filteredDiaries = useMemo(() => {
@@ -56,6 +78,13 @@ export default function DiariesPage() {
             );
         }
 
+        // 감정 필터링
+        if (selectedEmotion !== '전체') {
+            result = result.filter(diary =>
+                getEmotionType(diary.analysis.emotionalScore) === selectedEmotion
+            );
+        }
+
         // 정렬
         result.sort((a, b) => {
             const dateA = new Date(a.date);
@@ -64,7 +93,7 @@ export default function DiariesPage() {
         });
 
         return result;
-    }, [diaries, selectedMonth, searchQuery, sortOrder]);
+    }, [diaries, selectedMonth, searchQuery, selectedEmotion, sortOrder]);
 
     // 월별 일기 수 계산
     const monthStats = useMemo(() => {
@@ -77,15 +106,40 @@ export default function DiariesPage() {
         return stats;
     }, [diaries]);
 
-    // 감정 통계 (필터링된 일기 기준)
+    // 감정 통계 (월별/검색어 필터링만 적용된 일기 기준)
     const emotionStats = useMemo(() => {
         const stats = { happy: 0, good: 0, sad: 0, neutral: 0 };
-        filteredDiaries.forEach(diary => {
+
+        let targetDiaries = [...diaries];
+        if (selectedMonth !== '전체') {
+            const monthNum = months.indexOf(selectedMonth);
+            targetDiaries = targetDiaries.filter(diary => {
+                const date = new Date(diary.date);
+                return date.getMonth() + 1 === monthNum;
+            });
+        }
+        if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase();
+            targetDiaries = targetDiaries.filter(diary =>
+                diary.content.toLowerCase().includes(query) ||
+                diary.analysis.summary.toLowerCase().includes(query)
+            );
+        }
+
+        targetDiaries.forEach(diary => {
             const type = getEmotionType(diary.analysis.emotionalScore);
             stats[type]++;
         });
         return stats;
-    }, [filteredDiaries]);
+    }, [diaries, selectedMonth, searchQuery]);
+
+    const handleEmotionToggle = (emotion) => {
+        if (selectedEmotion === emotion) {
+            setSelectedEmotion('전체');
+        } else {
+            setSelectedEmotion(emotion);
+        }
+    };
 
     return (
         <div className={styles.diariesPage}>
@@ -142,11 +196,21 @@ export default function DiariesPage() {
                 <span>📝 총 {diaries.length}개 일기</span>
                 <span>🔍 검색 결과: {filteredDiaries.length}개</span>
                 <div className={styles.emotionMini}>
+                    <button
+                        className={`${styles.emotionMiniItem} ${styles.allEmotion} ${selectedEmotion === '전체' ? styles.active : ''}`}
+                        onClick={() => setSelectedEmotion('전체')}
+                    >
+                        전체
+                    </button>
                     {Object.entries(emotionStats).map(([key, count]) => (
                         count > 0 && (
-                            <span key={key} className={styles.emotionMiniItem}>
+                            <button
+                                key={key}
+                                className={`${styles.emotionMiniItem} ${selectedEmotion === key ? styles.active : ''}`}
+                                onClick={() => handleEmotionToggle(key)}
+                            >
                                 {emotionLabels[key].emoji} {count}
-                            </span>
+                            </button>
                         )
                     ))}
                 </div>
@@ -158,6 +222,7 @@ export default function DiariesPage() {
                         key={diary.id}
                         diary={diary}
                         onClick={() => setSelectedDiary(diary)}
+                        onEmotionClick={() => handleEmotionToggle(getEmotionType(diary.analysis.emotionalScore))}
                     />
                 ))}
             </div>
@@ -175,6 +240,24 @@ export default function DiariesPage() {
                     onClose={() => setSelectedDiary(null)}
                 />
             )}
+
+            {/* 플로팅 이동 버튼 */}
+            <div className={`${styles.floatingScroll} ${showScrollButtons ? styles.visible : ''}`}>
+                <button
+                    onClick={scrollToTop}
+                    className={styles.floatButton}
+                    title="맨 위로"
+                >
+                    <ArrowUp size={24} />
+                </button>
+                <button
+                    onClick={scrollToBottom}
+                    className={styles.floatButton}
+                    title="맨 아래로"
+                >
+                    <ArrowDown size={24} />
+                </button>
+            </div>
         </div>
     );
 }

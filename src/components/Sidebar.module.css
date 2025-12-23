@@ -85,6 +85,55 @@
 
 @media (max-width: 768px) {
     .sidebar {
+        top: auto;
+        bottom: 0;
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        padding: var(--space-xs) var(--space-md);
+        border-right: none;
+        border-top: 1px solid var(--border-glass);
+        background: rgba(26, 26, 46, 0.8);
+        backdrop-filter: blur(20px);
+        justify-content: center;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .logo,
+    .footer {
         display: none;
+    }
+
+    .nav {
+        flex-direction: row;
+        width: 100%;
+        justify-content: space-around;
+        gap: 0;
+    }
+
+    .navItem {
+        flex-direction: column;
+        gap: 4px;
+        padding: var(--space-sm);
+        flex: 1;
+        justify-content: center;
+    }
+
+    .navItem span {
+        display: none;
+    }
+
+    .navItem:hover {
+        background: transparent;
+    }
+
+    .navItem.active {
+        background: transparent;
+        color: var(--accent-primary);
+        box-shadow: none;
+    }
+
+    .navItem.active svg {
+        filter: drop-shadow(0 0 8px var(--accent-glow));
     }
 }

@@ -1,11 +1,17 @@
 .writePage {
     max-width: 1200px;
+    margin: 0 auto;
+    /* 중앙 정렬로 레이아웃 균형 확보 */
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .container {
     display: grid;
     grid-template-columns: 1fr 300px;
     gap: var(--space-xl);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .form {
@@ -34,13 +40,598 @@
 }
 
 .settingsBtn {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-sm);
 }
 
 .editor {
     min-height: 300px;
     font-size: var(--font-size-base);
     line-height: 1.8;
+}
+
+.extraInputs {
+    display: flex;
+    gap: var(--space-xl);
+    padding-bottom: var(--space-md);
+    margin-bottom: var(--space-md);
+    border-bottom: 1px solid var(--border-glass);
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.inputLabel {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.weatherOptions {
+    display: flex;
+    gap: var(--space-xs);
+}
+
+.weatherBtn {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-glass);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
+}
+
+.weatherBtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.weatherBtn.active {
+    background: var(--accent-gradient);
+    border-color: transparent;
+    color: white;
+    box-shadow: var(--shadow-glow);
+}
+
+.sleepInputWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.rangeBarContainer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    margin-top: var(--space-xs);
+    user-select: none;
+    /* 드래그 중 텍스트 선택 방지 */
+    touch-action: none;
+    /* 모바일에서 드래그 중 화면 스크롤 방지 */
+}
+
+.rangeLabels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.barTrack {
+    height: 12px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    position: relative;
+    cursor: pointer;
+    /* 클릭 가능함 표시 */
+    border: 1px solid var(--border-glass);
+}
+
+.selectionHighlight {
+    position: absolute;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(var(--accent-primary-rgb), 0.3), rgba(var(--accent-primary-rgb), 0.6));
+    border-radius: var(--radius-full);
+}
+
+.timePoint {
+    position: absolute;
+    top: 50%;
+    width: 20px;
+    height: 20px;
+    background: var(--accent-primary);
+    border: 3px solid white;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 10px rgba(var(--accent-primary-rgb), 0.4);
+    z-index: 10;
+    cursor: grab;
+    /* 드래그 가능함 표시 */
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.timePoint:hover {
+    transform: translate(-50%, -50%) scale(1.15);
+}
+
+.timePoint.dragging {
+    cursor: grabbing;
+    transform: translate(-50%, -50%) scale(1.2);
+    box-shadow: 0 0 15px rgba(var(--accent-primary-rgb), 0.6);
+}
+
+.pointLabel {
+    position: absolute;
+    top: -26px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent-primary);
+    background: var(--bg-glass);
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border-glass);
+    pointer-events: none;
+}
+
+.barHint {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 4px;
+}
+
+.sleepPresets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.presetBtn {
+    background: rgba(var(--accent-primary-rgb), 0.08);
+    border: 1px solid rgba(var(--accent-primary-rgb), 0.2);
+    border-radius: var(--radius-full);
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent-primary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.presetBtn:hover {
+    background: var(--accent-primary);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.sleepDuration {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}
+
+.sleepDuration strong {
+    color: var(--accent-primary);
+    font-size: var(--font-size-lg);
+}
+
+.sleepInputWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.sleepToggleButton {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: var(--space-md) var(--space-lg);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-lg);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.sleepToggleButton:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent-primary);
+}
+
+.sleepDisplayInfo {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-sm);
+}
+
+.timeRange {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+}
+
+.durationLabel {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+}
+
+.expandedSleepControl {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xl);
+    padding: var(--space-lg);
+    background: var(--bg-glass);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border-glass);
+    animation: slideDown 0.3s ease-out;
+    overflow-x: hidden;
+}
+
+.dialGaugeSvg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: visible;
+}
+
+.dialRangeGauge {
+    stroke: var(--accent-primary);
+    stroke-opacity: 0.7;
+    cursor: grab;
+    pointer-events: auto;
+    transition: stroke-width 0.2s;
+    touch-action: none;
+}
+
+.dialRangeGauge:hover {
+    stroke-width: 12;
+    stroke-opacity: 0.8;
+}
+
+.dialRangeGauge:active {
+    cursor: grabbing;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Circular Dial Styles */
+.dialWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: var(--space-sm) 0;
+}
+
+.dialContainer {
+    position: relative;
+    width: min(275px, 100%);
+    /* 부모 너비를 넘지 않도록 100% 사용 (vw보다 안전) */
+    height: min(275px, 100vw);
+    /* 모바일에서는 가로세로 비율 유지 */
+    aspect-ratio: 1 / 1;
+    /* 명시적으로 정사각형 유지 */
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
+    touch-action: none;
+    /* 다이얼 조작 시 화면 움직임 방지 */
+}
+
+.dialFace {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.dialHour {
+    position: absolute;
+    font-size: 16px;
+    /* 레이블 축소 */
+    font-weight: 800;
+    color: var(--accent-primary);
+    /* 숫자를 포인트 컬러로 변경하여 가독성 업 */
+    transform: translate(-50%, -50%);
+    opacity: 0.9;
+    /* 불투명도 최대 */
+    z-index: 1;
+}
+
+.dialValueGroup {
+    text-align: center;
+    z-index: 5;
+    pointer-events: none;
+    background: var(--bg-glass);
+    padding: 16px;
+    /* 패딩 최소화 */
+    border-radius: 50%;
+    width: 75%;
+    height: 75%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-glass);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+}
+
+.timeDisplayRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    /* 간격 축소 */
+    margin-bottom: 2px;
+}
+
+.timeDisplayBlock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 50px;
+    /* 너비 축소 */
+}
+
+.timeDisplayLabel {
+    font-size: 12px;
+    /* 최소 가시성 확보 */
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.timeDisplayValue {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+}
+
+.timeDisplayAMPM {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--accent-primary);
+    line-height: 1;
+}
+
+.timeDisplayDigits {
+    font-size: 22px;
+    /* 사이즈에 맞춰 축소 */
+    font-weight: 800;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+}
+
+.timeSeparator {
+    width: 1px;
+    height: 28px;
+    background: var(--border-glass);
+    opacity: 0.3;
+}
+
+.dialValueLabel {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    opacity: 0.9;
+}
+
+.dialTick {
+    position: absolute;
+    width: 1.5px;
+    height: 9px;
+    background: var(--border-glass);
+    border-radius: 1px;
+    opacity: 0.5;
+}
+
+.startHandle {
+    color: #818cf8 !important;
+    /* Calming indigo */
+    border: 2px solid #818cf8 !important;
+    box-shadow: 0 0 10px rgba(129, 140, 248, 0.4) !important;
+}
+
+.endHandle {
+    color: #fbbf24 !important;
+    /* Morning amber */
+    border: 2px solid #fbbf24 !important;
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.4) !important;
+}
+
+.dialHandle {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    background: white;
+    border-radius: 50%;
+    cursor: grab;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    touch-action: none;
+    transform: translate(-50%, -50%);
+    /* 중심 정렬 수정 */
+}
+
+.dialHandle:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+.dialHandle.active {
+    cursor: grabbing;
+    box-shadow: var(--shadow-lg), 0 0 0 6px rgba(var(--accent-primary-rgb), 0.3);
+}
+
+.dialHandleIcon {
+    pointer-events: none;
+}
+
+.dialTrack {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+/* Wheel Picker Styles */
+.wheelWrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding: var(--space-sm) 0;
+}
+
+.wheelGroups {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    /* 무조건 한 줄에 배치 */
+    justify-content: center;
+    gap: 8px;
+    /* 그룹 사이 간격 축소 */
+    perspective: 1000px;
+}
+
+.wheelPair {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    /* 항목 사이 간격 최소화 */
+    background: var(--bg-tertiary);
+    padding: 2px 4px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-glass);
+}
+
+.wheelSeparator {
+    font-size: var(--font-size-md);
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-top: -2px;
+}
+
+.wheelGroup {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.wheelLabel {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.wheelContainer {
+    position: relative;
+    height: 120px;
+    /* 높이 약간 축소 */
+    overflow: hidden;
+    mask-image: linear-gradient(to bottom, transparent, black 40%, black 60%, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 40%, black 60%, transparent);
+}
+
+.wheelList {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    overflow-y: auto;
+    scrollbar-width: none;
+    scroll-snap-type: y mandatory;
+    padding: 45px 0;
+    /* 높이 축소에 맞춤 (120 - 30) / 2 */
+}
+
+.wheelList::-webkit-scrollbar {
+    display: none;
+}
+
+.wheelItem {
+    height: 30px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    /* 최소 12px 기준 적용 */
+    font-weight: 600;
+    color: var(--text-muted);
+    scroll-snap-align: center;
+    transition: all var(--transition-fast);
+    cursor: pointer;
+}
+
+.wheelItem.selected {
+    color: var(--accent-primary);
+    font-size: 13px;
+    /* 선택된 폰트 크기 축소 */
+    font-weight: 800;
+}
+
+.wheelHighlight {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 30px;
+    transform: translateY(-50%);
+    background: rgba(99, 102, 241, 0.1);
+    border-top: 1px solid rgba(99, 102, 241, 0.2);
+    border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+    pointer-events: none;
+    border-radius: var(--radius-sm);
+}
+
+@media (max-width: 768px) {
+    .extraInputs {
+        flex-direction: column;
+        gap: var(--space-md);
+    }
+
+    .sleepRange {
+        flex: 1;
+    }
 }
 
 .editor::placeholder {
@@ -63,7 +654,19 @@
 
 .actions {
     display: flex;
+    align-items: center;
     gap: var(--space-sm);
+}
+
+.iconBtn {
+    width: 42px;
+    height: 42px;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
 }
 
 .spinner {
@@ -194,7 +797,6 @@
     }
 
     .sidebar {
-        order: -1;
         flex-direction: row;
     }
 

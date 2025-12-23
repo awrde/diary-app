@@ -1,7 +1,7 @@
-import { Calendar, Laugh, Smile, Frown, Meh } from 'lucide-react';
+import { Calendar, Laugh, Smile, Frown, Meh, ChevronRight, Moon, Sun, Cloud, CloudRain, Snowflake, Wind } from 'lucide-react';
 import styles from './DiaryCard.module.css';
 
-export default function DiaryCard({ diary, onClick }) {
+export default function DiaryCard({ diary, onClick, onEmotionClick }) {
     const formatDate = (dateStr) => {
         const date = new Date(dateStr);
         return date.toLocaleDateString('ko-KR', {
@@ -18,14 +18,34 @@ export default function DiaryCard({ diary, onClick }) {
         return <Meh size={28} color="#eab308" fill="#fef9c3" />; // Neutral (Yellow)
     };
 
+    const handleEmotionClick = (e) => {
+        if (onEmotionClick) {
+            e.stopPropagation();
+            onEmotionClick();
+        }
+    };
+
     return (
         <div className={`card ${styles.diaryCard}`} onClick={onClick}>
             <div className={styles.header}>
                 <div className={styles.date}>
                     <Calendar size={14} />
                     {formatDate(diary.date)}
+                    {diary.weather && (
+                        <div className={styles.weatherIcon}>
+                            {diary.weather === '맑음' && <Sun size={14} />}
+                            {diary.weather === '흐림' && <Cloud size={14} />}
+                            {diary.weather === '비' && <CloudRain size={14} />}
+                            {diary.weather === '눈' && <Snowflake size={14} />}
+                            {diary.weather === '바람' && <Wind size={14} />}
+                        </div>
+                    )}
                 </div>
-                <div className={styles.emoji}>
+                <div
+                    className={styles.emoji}
+                    onClick={handleEmotionClick}
+                    title="이 감정으로 필터링"
+                >
                     {getEmotionIcon(diary.analysis.emotionalScore)}
                 </div>
             </div>

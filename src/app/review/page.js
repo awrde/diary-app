@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { Calendar, BarChart3, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, BarChart3, FileText, ChevronLeft, ChevronRight, Moon, Cloud, Sun, CloudRain, Snowflake, Wind } from 'lucide-react';
 import { useDiary } from '@/context/DiaryContext';
 import { metrics } from '@/lib/mockData';
 import MetricChart from '@/components/MetricChart';
@@ -198,6 +198,50 @@ export default function ReviewPage() {
         neutral: { emoji: '😐', label: '보통' }
     };
 
+    // 날씨별 평균 기분 통계
+    const weatherMoodStats = useMemo(() => {
+        const stats = {};
+        filteredDiaries.forEach(diary => {
+            const w = diary.weather || '맑음';
+            if (!stats[w]) stats[w] = { total: 0, count: 0 };
+            stats[w].total += diary.analysis.emotionalScore.positive;
+            stats[w].count++;
+        });
+
+        return Object.entries(stats).map(([weather, data]) => ({
+            weather,
+            avg: (data.total / data.count).toFixed(0)
+        })).sort((a, b) => b.avg - a.avg);
+    }, [filteredDiaries]);
+
+    // 수면 시간 통계 및 인사이트
+    const sleepStats = useMemo(() => {
+        const sleepData = filteredDiaries.filter(d => d.sleepHours && d.sleepHours > 0);
+        if (sleepData.length === 0) return null;
+
+        const totalSleep = sleepData.reduce((sum, d) => sum + d.sleepHours, 0);
+        const avgSleep = (totalSleep / sleepData.length).toFixed(1);
+
+        // 수면 시간과 성장/업무 지표의 상관관계 (간단 예시)
+        const highSleepDiaries = sleepData.filter(d => d.sleepHours >= 7.5);
+        const lowSleepDiaries = sleepData.filter(d => d.sleepHours < 6);
+
+        const getAvgMetric = (list, metric) => {
+            if (list.length === 0) return 0;
+            return (list.reduce((sum, d) => sum + (d.analysis.metricScores[metric] || 0), 0) / list.length).toFixed(1);
+        };
+
+        const highSleepWork = getAvgMetric(highSleepDiaries, 'work');
+        const lowSleepWork = getAvgMetric(lowSleepDiaries, 'work');
+
+        return {
+            avgSleep,
+            correlation: highSleepWork > lowSleepWork ?
+                `수면 시간이 7.5시간 이상일 때 업무 효율이 평소보다 높게 나타났습니다.` :
+                `수면 시간과 업무 효율의 뚜렷한 상관관계가 아직 발견되지 않았습니다.`
+        };
+    }, [filteredDiaries]);
+
     const toggleMetric = (metricId) => {
         setSelectedMetrics(prev => {
             if (prev.includes(metricId)) {
@@ -384,6 +428,65 @@ export default function ReviewPage() {
                 </section>
             </div>
 
+            <div className={styles.correlationGrid}>
+                <section className={`card ${styles.insightCard}`}>
+                    <div className="card-header">
+                        <h2 className="card-title">
+                            <Cloud size={20} />
+                            날씨와 기분
+                        </h2>
+                    </div>
+                    <div className={styles.weatherStatsList}>
+                        {weatherMoodStats.length > 0 ? (
+                            weatherMoodStats.map(stat => (
+                                <div key={stat.weather} className={styles.weatherStatItem}>
+                                    <div className={styles.weatherIconWithName}>
+                                        {stat.weather === '맑음' && <Sun size={18} />}
+                                        {stat.weather === '흐림' && <Cloud size={18} />}
+                                        {stat.weather === '비' && <CloudRain size={18} />}
+                                        {stat.weather === '눈' && <Snowflake size={18} />}
+                                        {stat.weather === '바람' && <Wind size={18} />}
+                                        <span>{stat.weather}</span>
+                                    </div>
+                                    <div className={styles.moodBarContainer}>
+                                        <div
+                                            className={styles.moodBarFill}
+                                            style={{ width: `${stat.avg}%` }}
+                                        />
+                                        <span className={styles.moodValue}>{stat.avg}%</span>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className={styles.noData}>데이터가 부족합니다.</div>
+                        )}
+                    </div>
+                </section>
+
+                <section className={`card ${styles.insightCard}`}>
+                    <div className="card-header">
+                        <h2 className="card-title">
+                            <Moon size={20} />
+                            수면 분석
+                        </h2>
+                    </div>
+                    <div className={styles.sleepInsightContent}>
+                        {sleepStats ? (
+                            <>
+                                <div className={styles.sleepBadge}>
+                                    평균 수면 <strong>{sleepStats.avgSleep}시간</strong>
+                                </div>
+                                <p className={styles.sleepCorrelationText}>
+                                    💡 {sleepStats.correlation}
+                                </p>
+                            </>
+                        ) : (
+                            <div className={styles.noData}>데이터가 부족합니다.</div>
+                        )}
+                    </div>
+                </section>
+            </div>
+
             <section className={styles.diariesSection}>
                 <h2 className={`card-title ${styles.sectionTitle}`}>
                     <Calendar size={20} />
@@ -405,12 +508,14 @@ export default function ReviewPage() {
                 )}
             </section>
 
-            {selectedDiary && (
-                <AnalysisModal
-                    diary={selectedDiary}
-                    onClose={() => setSelectedDiary(null)}
-                />
-            )}
+            {
+                selectedDiary && (
+                    <AnalysisModal
+                        diary={selectedDiary}
+                        onClose={() => setSelectedDiary(null)}
+                    />
+                )
+            }
 
             <DatePickerModal
                 isOpen={showDatePicker}
@@ -419,6 +524,6 @@ export default function ReviewPage() {
                 currentDate={currentDate}
                 periodType={activePeriod}
             />
-        </div>
+        </div >
     );
 }

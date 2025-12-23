@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { TrendingUp, Calendar, Sparkles, ArrowRight, Laugh, Smile, Frown, Meh } from 'lucide-react';
+import { TrendingUp, Calendar, Sparkles, ArrowRight, Laugh, Smile, Frown, Meh, Moon } from 'lucide-react';
 import { useDiary } from '@/context/DiaryContext';
 import MetricChart from '@/components/MetricChart';
 import DiaryCard from '@/components/DiaryCard';
@@ -27,6 +27,7 @@ const emotionLabels = {
 export default function Dashboard() {
   const { diaries, getLatestDiary, getWeightedScore } = useDiary();
   const [selectedDiary, setSelectedDiary] = useState(null);
+  const [activeTooltip, setActiveTooltip] = useState(null);
 
   const latestDiary = getLatestDiary();
   const recentDiaries = diaries.slice(0, 5);
@@ -52,6 +53,18 @@ export default function Dashboard() {
 
   const totalEmotions = Object.values(emotionStats).reduce((a, b) => a + b, 0);
 
+  // 최근 수면 평균 (데이터가 있는 것만)
+  const avgSleep = useMemo(() => {
+    const sleepData = diaries
+      .filter(d => d.sleepHours && d.sleepHours > 0)
+      .slice(0, 7);
+
+    if (sleepData.length === 0) return 0;
+
+    const total = sleepData.reduce((sum, d) => sum + d.sleepHours, 0);
+    return (total / sleepData.length).toFixed(1);
+  }, [diaries]);
+
   return (
     <div className={styles.dashboard}>
       <header className="page-header">
@@ -70,7 +83,12 @@ export default function Dashboard() {
           </div>
         </Link>
 
-        <div className={`card ${styles.statCard}`}>
+        <div
+          className={`card ${styles.statCard} ${activeTooltip === 'score' ? styles.active : ''}`}
+          onMouseEnter={() => setActiveTooltip('score')}
+          onMouseLeave={() => setActiveTooltip(null)}
+          onClick={() => setActiveTooltip(activeTooltip === 'score' ? null : 'score')}
+        >
           <div className={styles.statIcon} style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
             <TrendingUp size={24} />
           </div>
@@ -78,15 +96,40 @@ export default function Dashboard() {
             <span className={styles.statValue}>{getWeightedScore(latestDiary)}</span>
             <span className={styles.statLabel}>오늘 종합 점수</span>
           </div>
+          {activeTooltip === 'score' && (
+            <div className={styles.tooltip}>
+              건강, 관계, 자기계발, 업무 지표를 가중치에 따라 합산한 오늘의 전반적인 상태 점수입니다.
+            </div>
+          )}
         </div>
 
-        <div className={`card ${styles.statCard}`}>
+        <div
+          className={`card ${styles.statCard} ${activeTooltip === 'positive' ? styles.active : ''}`}
+          onMouseEnter={() => setActiveTooltip('positive')}
+          onMouseLeave={() => setActiveTooltip(null)}
+          onClick={() => setActiveTooltip(activeTooltip === 'positive' ? null : 'positive')}
+        >
           <div className={styles.statIcon} style={{ background: 'linear-gradient(135deg, #ec4899, #db2777)' }}>
             <Sparkles size={24} />
           </div>
           <div className={styles.statContent}>
             <span className={styles.statValue}>{latestDiary?.analysis.emotionalScore.positive || 0}%</span>
             <span className={styles.statLabel}>긍정 지수</span>
+          </div>
+          {activeTooltip === 'positive' && (
+            <div className={styles.tooltip}>
+              AI가 분석한 일기 내용 중 긍정적인 감정의 비율을 나타냅니다.
+            </div>
+          )}
+        </div>
+
+        <div className={`card ${styles.statCard}`}>
+          <div className={styles.statIcon} style={{ background: 'linear-gradient(135deg, #a78bfa, #7c3aed)' }}>
+            <Moon size={24} />
+          </div>
+          <div className={styles.statContent}>
+            <span className={styles.statValue}>{avgSleep}h</span>
+            <span className={styles.statLabel}>최근 평균 수면</span>
           </div>
         </div>
       </div>
