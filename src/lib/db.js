@@ -2,7 +2,28 @@ import Dexie from 'dexie';
 
 export const db = new Dexie('AIDiaryDB');
 
-db.version(1).stores({
-    diaries: '++id, date', // id는 자동 증가, date로 조회 가능하게 인덱싱
-    settings: 'id' // 설정 저장을 위한 테이블 (id='default' 하나만 사용)
-});
+// v2: userId / updatedAt 인덱스 추가, 기존 데이터 마이그레이션
+db.version(2)
+  .stores({
+    diaries: '++id, date, userId, updatedAt', // userId/updatedAt으로 동기화 확장 대비
+    settings: 'id'
+  })
+  .upgrade(async (tx) => {
+    try {
+      const all = await tx.table('diaries').toArray();
+      const DEFAULT_USER_ID = 'local-user';
+      const now = new Date().toISOString();
+      const updates = all
+        .filter(d => !d.userId || !d.updatedAt)
+        .map(d => ({
+          ...d,
+          userId: d.userId || DEFAULT_USER_ID,
+          updatedAt: d.updatedAt || now
+        }));
+      if (updates.length > 0) {
+        await tx.table('diaries').bulkPut(updates);
+      }
+    } catch (e) {
+      console.error('Migration to v2 failed', e);
+    }
+  });

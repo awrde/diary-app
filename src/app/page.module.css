@@ -1,5 +1,7 @@
 .dashboard {
   max-width: 1400px;
+  width: 100%;
+  min-width: 0;
 }
 
 .statsGrid {
@@ -162,6 +164,7 @@
 
 .chartSection {
   height: fit-content;
+  overflow: hidden;
 }
 
 .noData {
@@ -199,6 +202,42 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+}
+
+@media (max-width: 1100px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .emotionGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .mainGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .chartSection {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .emotionGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .chartSection {
+    min-width: 0;
+  }
+
+  .dashboard {
+    padding-bottom: var(--space-xl);
+  }
 }
 
 @media (max-width: 1024px) {

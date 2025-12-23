@@ -187,9 +187,9 @@ export default function Dashboard() {
               <Calendar size={20} />
               최근 기록
             </h2>
-            <a href="/diaries" className={styles.viewAll}>
+            <Link href="/diaries" className={styles.viewAll}>
               전체 보기 <ArrowRight size={16} />
-            </a>
+            </Link>
           </div>
 
           <div className={styles.diaryList}>

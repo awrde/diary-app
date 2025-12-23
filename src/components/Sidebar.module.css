@@ -88,7 +88,8 @@
         top: auto;
         bottom: 0;
         width: 100%;
-        height: auto;
+        height: var(--mobile-nav-height);
+        min-height: var(--mobile-nav-height);
         flex-direction: row;
         padding: var(--space-xs) var(--space-md);
         border-right: none;

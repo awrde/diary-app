@@ -1,5 +1,7 @@
 .reviewPage {
     max-width: 1400px;
+    width: 100%;
+    min-width: 0;
 }
 
 .periodNav {
@@ -149,6 +151,7 @@
 .chartSection {
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .metricFilters {
@@ -264,6 +267,10 @@
     .periodNav {
         flex-wrap: wrap;
     }
+
+    .reviewPage {
+        padding-bottom: var(--space-xl);
+    }
 }
 
 @media (max-width: 768px) {
@@ -284,5 +291,9 @@
         order: -1;
         width: 100%;
         margin-bottom: var(--space-sm);
+    }
+
+    .chartSection {
+        min-width: 0;
     }
 }

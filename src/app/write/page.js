@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect, Suspense } from 'react';
+import { useState, useRef, useEffect, Suspense, useMemo } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { PenLine, Image, Sparkles, Settings, Save, Sun, Cloud, CloudRain, Snowflake, Wind, Moon, BedDouble, AlarmClock, ChevronDown, ChevronUp } from 'lucide-react';
 import { useDiary } from '@/context/DiaryContext';
@@ -13,7 +14,7 @@ function WriteContent() {
     const searchParams = useSearchParams();
     const editId = searchParams.get('edit');
 
-    const { addDiary, updateDiary, diaries, settings } = useDiary();
+    const { addDiary, updateDiary, diaries, settings, checkUsageLimit } = useDiary();
     const [content, setContent] = useState('');
     const [images, setImages] = useState([]);
     const [showSettings, setShowSettings] = useState(false);
@@ -30,6 +31,7 @@ function WriteContent() {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analyzedDiary, setAnalyzedDiary] = useState(null);
     const fileInputRef = useRef(null);
+    const usageInfo = useMemo(() => checkUsageLimit(diaries), [diaries, checkUsageLimit]);
 
     // 수정 모드일 때 데이터 로드 또는 URL 파라미터로 내용 수신
     useEffect(() => {
@@ -420,6 +422,23 @@ function WriteContent() {
                     {editId ? '기록된 내용을 수정하고 다시 분석받아보세요.' : '오늘 하루는 어땠나요? 아래 네모 박스에 자유롭게 기록해보세요.'}
                 </p>
             </header>
+
+            {settings.plan === 'free' && (
+                <div className={styles.limitBanner}>
+                    <div className={styles.limitText}>
+                        <strong>무료 이용 한도 안내</strong>
+                        <span>
+                            최근 2개월 동안 {usageInfo?.count ?? 0}/100 회 분석 사용.
+                            {settings.geminiApiKey ? ' 개인 API 키가 등록되어 있어 한도 없이 이용할 수 있습니다.' : ' 개인 Gemini API 키를 등록하면 한도 없이 이용할 수 있습니다.'}
+                        </span>
+                    </div>
+                    {!settings.geminiApiKey && (
+                        <Link href="/settings" className={styles.limitLink}>
+                            설정에서 키 등록하기
+                        </Link>
+                    )}
+                </div>
+            )}
 
             <div className={styles.container}>
                 <form onSubmit={handleSubmit} className={styles.form}>

@@ -74,6 +74,12 @@ npm run dev
 - `public`: 로고, 이미지 등 정적 자산
 - `android`: Capacitor 안드로이드 네이티브 프로젝트 설정
 
+### 데이터 스키마 요약
+- `diaries`: `id`, `date`, `content`, `images`, `personality`, `analysis`, `userId`, `updatedAt`
+  - `userId`: 멀티 사용자/동기화 대비 계정 식별자(기본값 `local-user`)
+  - `updatedAt`: ISO 문자열, 증분 동기화를 위한 변경 시각
+- `settings`: `id='default'`, `personality`, `weights`, `debugMode`, `geminiApiKey`, `selectedModel`, `plan`, `forceLimit`
+
 ---
 
 ## 🚦 프로젝트 현황

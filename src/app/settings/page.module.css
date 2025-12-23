@@ -93,6 +93,36 @@
     margin-bottom: var(--space-lg);
 }
 
+.infoBanner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    background: rgba(99, 102, 241, 0.08);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    padding: var(--space-md);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-lg);
+}
+
+.infoText {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+}
+
+.infoLink {
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+}
+
+.infoLink:hover {
+    text-decoration: underline;
+}
+
 .personalityGrid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);

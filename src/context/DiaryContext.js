@@ -7,6 +7,7 @@ import { mockDiaries, defaultWeights } from '@/lib/mockData';
 import { analyzeDiaryWithGemini } from '@/lib/gemini';
 
 const DiaryContext = createContext();
+const DEFAULT_USER_ID = 'local-user';
 
 export function DiaryProvider({ children }) {
     // 실시간 DB 쿼리 (Dexie)
@@ -128,9 +129,12 @@ export function DiaryProvider({ children }) {
             analysis = generateMockAnalysis(diary.content, { weather: diary.weather, sleepHours: diary.sleepHours });
         }
 
+        const now = new Date().toISOString();
         const newDiary = {
             id: Date.now(),
             date: new Date().toISOString().split('T')[0],
+            userId: diary.userId || DEFAULT_USER_ID,
+            updatedAt: now,
             ...diary,
             analysis
         };
@@ -175,6 +179,8 @@ export function DiaryProvider({ children }) {
         const updatedDiary = {
             ...targetDiary,
             ...updates,
+            userId: targetDiary.userId || DEFAULT_USER_ID,
+            updatedAt: new Date().toISOString(),
             analysis: newAnalysis
         };
 
@@ -225,9 +231,18 @@ export function DiaryProvider({ children }) {
         return totalWeight > 0 ? (totalScore / totalWeight).toFixed(1) : 0;
     };
 
+    const withDefaults = (entries) => {
+        const now = new Date().toISOString();
+        return entries.map(item => ({
+            ...item,
+            userId: item.userId || DEFAULT_USER_ID,
+            updatedAt: item.updatedAt || now
+        }));
+    };
+
     const resetToMockData = async () => {
         await db.diaries.clear();
-        await db.diaries.bulkAdd(mockDiaries);
+        await db.diaries.bulkAdd(withDefaults(mockDiaries));
         const defaultSet = { id: 'default', personality: 'warm_companion', weights: defaultWeights };
         await db.settings.put(defaultSet);
         setSettings(defaultSet);
@@ -238,7 +253,7 @@ export function DiaryProvider({ children }) {
             if (!data.diaries || !Array.isArray(data.diaries)) throw new Error('Invalid backup data');
 
             await db.diaries.clear();
-            await db.diaries.bulkAdd(data.diaries);
+            await db.diaries.bulkAdd(withDefaults(data.diaries));
 
             if (data.settings) {
                 await db.settings.put({ ...data.settings, id: 'default' });
@@ -249,6 +264,40 @@ export function DiaryProvider({ children }) {
             console.error('Import failed:', err);
             return false;
         }
+    };
+
+    // 증분 동기화: updatedAt 기준으로 특정 시점 이후 변경분만 추출
+    const getSyncPayload = (sinceISOString) => {
+        const since = sinceISOString ? new Date(sinceISOString).getTime() : 0;
+        const changedDiaries = safeDiaries.filter(d => {
+            if (!d.updatedAt) return true;
+            const t = new Date(d.updatedAt).getTime();
+            return t > since;
+        });
+        return {
+            diaries: changedDiaries,
+            settings
+        };
+    };
+
+    // 외부 동기화 패치 적용: userId 매핑을 현재 사용자 ID로 덮어쓰는 옵션 포함
+    const applySyncPatch = async (patch, currentUserId = DEFAULT_USER_ID) => {
+        if (!patch || !patch.diaries || !Array.isArray(patch.diaries)) return false;
+
+        const normalized = patch.diaries.map(d => ({
+            ...d,
+            userId: currentUserId || d.userId || DEFAULT_USER_ID,
+            updatedAt: d.updatedAt || new Date().toISOString()
+        }));
+
+        await db.diaries.bulkPut(normalized);
+
+        if (patch.settings) {
+            const mergedSettings = { ...settings, ...patch.settings, id: 'default' };
+            await db.settings.put(mergedSettings);
+            setSettings(mergedSettings);
+        }
+        return true;
     };
 
     const clearAllData = async () => {
@@ -269,6 +318,8 @@ export function DiaryProvider({ children }) {
             getWeightedScore,
             resetToMockData,
             importAllData,
+            getSyncPayload,
+            applySyncPatch,
             clearAllData,
             checkUsageLimit
         }}>
