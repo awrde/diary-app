@@ -25,6 +25,14 @@ export default function DiaryCard({ diary, onClick, onEmotionClick }) {
         }
     };
 
+    const contentPreview = diary.content.length > 90
+        ? diary.content.slice(0, 90) + '...'
+        : diary.content;
+
+    const summaryPreview = diary.analysis.summary.length > 140
+        ? diary.analysis.summary.slice(0, 140) + '...'
+        : diary.analysis.summary;
+
     return (
         <div className={`card ${styles.diaryCard}`} onClick={onClick}>
             <div className={styles.header}>
@@ -51,13 +59,11 @@ export default function DiaryCard({ diary, onClick, onEmotionClick }) {
             </div>
 
             <p className={styles.content}>
-                {diary.content.length > 100
-                    ? diary.content.slice(0, 100) + '...'
-                    : diary.content}
+                {contentPreview}
             </p>
 
             <div className={styles.summary}>
-                {diary.analysis.summary}
+                {summaryPreview}
             </div>
 
             <div className={styles.metrics}>

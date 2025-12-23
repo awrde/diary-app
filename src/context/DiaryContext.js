@@ -12,6 +12,7 @@ const DEFAULT_USER_ID = 'local-user';
 export function DiaryProvider({ children }) {
     // 실시간 DB 쿼리 (Dexie)
     const diaries = useLiveQuery(() => db.diaries.orderBy('date').reverse().toArray(), [], []);
+    const recentDiaries = useLiveQuery(() => db.diaries.orderBy('date').reverse().limit(14).toArray(), [], []);
     const settingsQueryResult = useLiveQuery(() => db.settings.get('default'));
 
     // 설정 상태 관리
@@ -209,6 +210,7 @@ export function DiaryProvider({ children }) {
     };
 
     const safeDiaries = diaries || [];
+    const safeRecentDiaries = recentDiaries || safeDiaries.slice(0, 20);
 
     const getLatestDiary = () => safeDiaries[0] || null;
     const getWeeklyDiaries = () => safeDiaries.slice(0, 7);
@@ -308,6 +310,7 @@ export function DiaryProvider({ children }) {
     return (
         <DiaryContext.Provider value={{
             diaries: safeDiaries,
+            recentDiaries: safeRecentDiaries,
             settings,
             addDiary,
             updateDiary,

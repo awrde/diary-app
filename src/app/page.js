@@ -25,12 +25,12 @@ const emotionLabels = {
 };
 
 export default function Dashboard() {
-  const { diaries, getLatestDiary, getWeightedScore } = useDiary();
+  const { diaries, recentDiaries, getLatestDiary, getWeightedScore } = useDiary();
   const [selectedDiary, setSelectedDiary] = useState(null);
   const [activeTooltip, setActiveTooltip] = useState(null);
 
   const latestDiary = getLatestDiary();
-  const recentDiaries = diaries.slice(0, 5);
+  const recentList = (recentDiaries && recentDiaries.length > 0 ? recentDiaries : diaries).slice(0, 5);
 
   // 최근 7일 차트 데이터
   const weeklyChartData = useMemo(() => {
@@ -65,6 +65,13 @@ export default function Dashboard() {
     return (total / sleepData.length).toFixed(1);
   }, [diaries]);
 
+  const hasLatest = Boolean(latestDiary);
+
+  const handleTooltipToggle = (key) => {
+    if (!hasLatest) return;
+    setActiveTooltip(prev => (prev === key ? null : key));
+  };
+
   return (
     <div className={styles.dashboard}>
       <header className="page-header">
@@ -85,18 +92,16 @@ export default function Dashboard() {
 
         <div
           className={`card ${styles.statCard} ${activeTooltip === 'score' ? styles.active : ''}`}
-          onMouseEnter={() => setActiveTooltip('score')}
-          onMouseLeave={() => setActiveTooltip(null)}
-          onClick={() => setActiveTooltip(activeTooltip === 'score' ? null : 'score')}
+          onClick={() => handleTooltipToggle('score')}
         >
           <div className={styles.statIcon} style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
             <TrendingUp size={24} />
           </div>
           <div className={styles.statContent}>
-            <span className={styles.statValue}>{getWeightedScore(latestDiary)}</span>
-            <span className={styles.statLabel}>오늘 종합 점수</span>
+            <span className={styles.statValue}>{hasLatest ? getWeightedScore(latestDiary) : '--'}</span>
+            <span className={styles.statLabel}>{hasLatest ? '오늘 종합 점수' : '데이터 로딩 중'}</span>
           </div>
-          {activeTooltip === 'score' && (
+          {activeTooltip === 'score' && hasLatest && (
             <div className={styles.tooltip}>
               건강, 관계, 자기계발, 업무 지표를 가중치에 따라 합산한 오늘의 전반적인 상태 점수입니다.
             </div>
@@ -105,18 +110,16 @@ export default function Dashboard() {
 
         <div
           className={`card ${styles.statCard} ${activeTooltip === 'positive' ? styles.active : ''}`}
-          onMouseEnter={() => setActiveTooltip('positive')}
-          onMouseLeave={() => setActiveTooltip(null)}
-          onClick={() => setActiveTooltip(activeTooltip === 'positive' ? null : 'positive')}
+          onClick={() => handleTooltipToggle('positive')}
         >
           <div className={styles.statIcon} style={{ background: 'linear-gradient(135deg, #ec4899, #db2777)' }}>
             <Sparkles size={24} />
           </div>
           <div className={styles.statContent}>
-            <span className={styles.statValue}>{latestDiary?.analysis.emotionalScore.positive || 0}%</span>
-            <span className={styles.statLabel}>긍정 지수</span>
+            <span className={styles.statValue}>{hasLatest ? `${latestDiary.analysis.emotionalScore.positive}%` : '--'}</span>
+            <span className={styles.statLabel}>{hasLatest ? '긍정 지수' : '데이터 로딩 중'}</span>
           </div>
-          {activeTooltip === 'positive' && (
+          {activeTooltip === 'positive' && hasLatest && (
             <div className={styles.tooltip}>
               AI가 분석한 일기 내용 중 긍정적인 감정의 비율을 나타냅니다.
             </div>
@@ -193,7 +196,7 @@ export default function Dashboard() {
           </div>
 
           <div className={styles.diaryList}>
-            {recentDiaries.map(diary => (
+            {recentList.map(diary => (
               <DiaryCard
                 key={diary.id}
                 diary={diary}

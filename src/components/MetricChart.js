@@ -65,6 +65,9 @@ export default function MetricChart({ data, selectedMetrics = ['health', 'relati
     const options = {
         responsive: true,
         maintainAspectRatio: false,
+        normalized: true,
+        animation: false, // 초기 렌더 지연 최소화
+        responsiveAnimationDuration: 0,
         interaction: {
             mode: 'index',
             intersect: false,
