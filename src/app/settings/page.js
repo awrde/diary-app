@@ -21,6 +21,8 @@ export default function SettingsPage() {
     const [saved, setSaved] = useState(false);
     const [isTesting, setIsTesting] = useState(false);
     const [testResult, setTestResult] = useState(null);
+    const isFreePlan = plan === 'free';
+    const hasPersonalKey = Boolean(geminiApiKey?.trim());
 
     // DB에서 데이터가 로드되면 로컬 상태 업데이트
     useEffect(() => {
@@ -159,6 +161,29 @@ export default function SettingsPage() {
                 <h1 className="page-title">설정</h1>
                 <p className="page-subtitle">AI 분석 방식과 평가 기준을 설정하세요</p>
             </header>
+
+            {isFreePlan && (
+                <div className={styles.infoBanner}>
+                    <AlertCircle size={18} />
+                    <div className={styles.infoText}>
+                        <strong>무료 이용 한도 안내</strong>
+                        <span>
+                            최근 2개월 기준 최대 100회까지 AI 분석이 제공됩니다.
+                            {hasPersonalKey ? ' 개인 API 키가 등록되어 있어 제한 없이 이용 가능합니다.' : ' 개인 Gemini API 키를 등록하면 제한 없이 이용할 수 있습니다.'}
+                        </span>
+                    </div>
+                    {!hasPersonalKey && (
+                        <a
+                            href="https://aistudio.google.com/app/apikey"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.infoLink}
+                        >
+                            키 발급받기 <ExternalLink size={12} />
+                        </a>
+                    )}
+                </div>
+            )}
 
             <div className={styles.settingsGrid}>
                 <section className={`card ${styles.section}`}>
