@@ -132,6 +132,18 @@ body {
     padding: var(--space-lg);
     padding-bottom: calc(var(--space-2xl) + var(--mobile-nav-height) + 16px); /* 하단 네비 여유 여백 */
   }
+
+  /* 모바일: 블러/트랜지션 최소화로 초기 렌더 흔들림 완화 */
+  .card {
+    backdrop-filter: none;
+    background: rgba(20, 20, 35, 0.9);
+    transition: none;
+  }
+
+  .card:hover {
+    transform: none;
+    box-shadow: var(--shadow-card);
+  }
 }
 
 .page-header {
