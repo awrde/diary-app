@@ -33,8 +33,22 @@ function WriteContent() {
     const fileInputRef = useRef(null);
     const usageInfo = useMemo(() => checkUsageLimit(diaries), [diaries, checkUsageLimit]);
 
+    // 선택된 날짜 (기본값은 오늘)
+    const initialDate = searchParams.get('date') || new Date().toISOString().split('T')[0];
+    const [selectedDate, setSelectedDate] = useState(initialDate);
+
     // 수정 모드일 때 데이터 로드 또는 URL 파라미터로 내용 수신
     useEffect(() => {
+        // [추가] 특정 날짜를 지정해서 들어왔을 때, 이미 일기가 있다면 수정 모드로 자동 전환
+        const dateParam = searchParams.get('date');
+        if (!editId && dateParam && diaries.length > 0) {
+            const existingDiary = diaries.find(d => d.date === dateParam);
+            if (existingDiary) {
+                router.replace(`/write?edit=${existingDiary.id}`);
+                return;
+            }
+        }
+
         if (editId && diaries.length > 0) {
             const id = parseInt(editId);
             const diary = diaries.find(d => d.id === id);
@@ -46,17 +60,16 @@ function WriteContent() {
                 setSleepEnd(diary.sleepEnd || '07:00');
                 setSleepHours(diary.sleepHours || 8);
                 setPersonality(diary.personality || settings.personality);
+                if (diary.date) setSelectedDate(diary.date);
             }
         } else {
             // Obsidian 등 외부에서 파라미터로 전달된 경우
             const externalContent = searchParams.get('content');
             if (externalContent) {
                 setContent(externalContent);
-                // URL 파라미터를 사용한 후에는 지우는 것이 좋지만, 
-                // Next.js 클라이언트 사이드에서 간단히 상태만 채워넣음
             }
         }
-    }, [editId, diaries, settings.personality, searchParams]);
+    }, [editId, diaries, settings.personality, searchParams, router]);
 
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files);
@@ -118,6 +131,7 @@ function WriteContent() {
             }
 
             const newDiary = await addDiary({
+                date: selectedDate,
                 content,
                 images,
                 personality: settings.personality,
@@ -445,7 +459,7 @@ function WriteContent() {
                     <div className={`card ${styles.editorCard}`}>
                         <div className={styles.editorHeader}>
                             <div className={styles.date}>
-                                {new Date().toLocaleDateString('ko-KR', {
+                                {new Date(selectedDate + 'T00:00:00').toLocaleDateString('ko-KR', {
                                     year: 'numeric',
                                     month: 'long',
                                     day: 'numeric',

@@ -133,7 +133,7 @@ export function DiaryProvider({ children }) {
         const now = new Date().toISOString();
         const newDiary = {
             id: Date.now(),
-            date: new Date().toISOString().split('T')[0],
+            date: diary.date || new Date().toISOString().split('T')[0],
             userId: diary.userId || DEFAULT_USER_ID,
             updatedAt: now,
             ...diary,

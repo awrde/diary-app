@@ -16,6 +16,7 @@ import styles from './Sidebar.module.css';
 const navItems = [
     { href: '/', icon: Home, label: '대시보드' },
     { href: '/write', icon: PenLine, label: '일기 작성' },
+    { href: '/calendar', icon: Calendar, label: '캘린더' },
     { href: '/diaries', icon: BookOpen, label: '전체 일기' },
     { href: '/review', icon: Calendar, label: '기간별 회고' },
     { href: '/settings', icon: Settings, label: '설정' },
