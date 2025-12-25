@@ -2,206 +2,173 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { TrendingUp, Calendar, Sparkles, ArrowRight, Laugh, Smile, Frown, Meh, Moon } from 'lucide-react';
+import {
+  TrendingUp,
+  Calendar,
+  Sparkles,
+  ArrowRight,
+  PenLine,
+  BookOpen,
+  BarChart3,
+  Settings,
+  Heart,
+  Zap,
+  Coffee,
+  Sun,
+  CheckCircle2
+} from 'lucide-react';
 import { useDiary } from '@/context/DiaryContext';
-import MetricChart from '@/components/MetricChart';
 import DiaryCard from '@/components/DiaryCard';
 import AnalysisModal from '@/components/AnalysisModal';
 import styles from './page.module.css';
 
-// 감정 이모티콘 분류
-function getEmotionType(score) {
-  if (score.positive >= 70) return 'happy';
-  if (score.positive >= 50) return 'good';
-  if (score.negative >= 40) return 'sad';
-  return 'neutral';
-}
-
-const emotionLabels = {
-  happy: { Icon: Laugh, color: '#22c55e', fill: '#dcfce7', label: '행복' },
-  good: { Icon: Smile, color: '#6366f1', fill: '#e0e7ff', label: '좋음' },
-  sad: { Icon: Frown, color: '#ef4444', fill: '#fee2e2', label: '우울' },
-  neutral: { Icon: Meh, color: '#eab308', fill: '#fef9c3', label: '보통' }
-};
-
 export default function Dashboard() {
-  const { diaries, recentDiaries, getLatestDiary, getWeightedScore } = useDiary();
+  const { diaries, getLatestDiary, getWeightedScore } = useDiary();
   const [selectedDiary, setSelectedDiary] = useState(null);
-  const [activeTooltip, setActiveTooltip] = useState(null);
 
   const latestDiary = getLatestDiary();
-  const recentList = (recentDiaries && recentDiaries.length > 0 ? recentDiaries : diaries).slice(0, 5);
+  const recentList = diaries.slice(0, 3);
+  const todayDateKey = new Date().toISOString().split('T')[0];
+  const hasWrittenToday = diaries.some(d => d.date === todayDateKey);
 
-  // 최근 7일 차트 데이터
-  const weeklyChartData = useMemo(() => {
-    const recent7 = diaries.slice(0, 7).reverse();
-    return recent7.map(diary => ({
-      date: diary.date.slice(5).replace('-', '/'),
-      ...diary.analysis.metricScores
-    }));
-  }, [diaries]);
-
-  // 감정 통계 집계
-  const emotionStats = useMemo(() => {
-    const stats = { happy: 0, good: 0, sad: 0, neutral: 0 };
-    diaries.forEach(diary => {
-      const type = getEmotionType(diary.analysis.emotionalScore);
-      stats[type]++;
+  // 최근 7일 중 며칠 썼는지 계산
+  const last7Days = useMemo(() => {
+    return Array.from({ length: 7 }).map((_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      return d.toISOString().split('T')[0];
     });
-    return stats;
-  }, [diaries]);
+  }, []);
 
-  const totalEmotions = Object.values(emotionStats).reduce((a, b) => a + b, 0);
+  const streak = useMemo(() => {
+    return last7Days.filter(date => diaries.some(d => d.date === date)).length;
+  }, [diaries, last7Days]);
 
-  // 최근 수면 평균 (데이터가 있는 것만)
-  const avgSleep = useMemo(() => {
-    const sleepData = diaries
-      .filter(d => d.sleepHours && d.sleepHours > 0)
-      .slice(0, 7);
-
-    if (sleepData.length === 0) return 0;
-
-    const total = sleepData.reduce((sum, d) => sum + d.sleepHours, 0);
-    return (total / sleepData.length).toFixed(1);
-  }, [diaries]);
-
-  const hasLatest = Boolean(latestDiary);
-
-  const handleTooltipToggle = (key) => {
-    if (!hasLatest) return;
-    setActiveTooltip(prev => (prev === key ? null : key));
-  };
+  const today = new Date().toLocaleDateString('ko-KR', {
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long'
+  });
 
   return (
-    <div className={styles.dashboard}>
-      <header className="page-header">
-        <h1 className="page-title">대시보드</h1>
-        <p className="page-subtitle">오늘의 기록과 최근 변화를 확인하세요</p>
-      </header>
-
-      <div className={styles.statsGrid}>
-        <Link href="/diaries" className={`card ${styles.statCard} ${styles.clickable}`}>
-          <div className={styles.statIcon} style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
-            <Calendar size={24} />
+    <div className={styles.hubContainer}>
+      {/* 1. Welcome Section (Hero) */}
+      <section className={styles.heroSection}>
+        <div className={styles.welcomeText}>
+          <div className={styles.topStatus}>
+            <span className={styles.dateLabel}>{today}</span>
+            <span className={styles.streakBadge}>🔥 {streak}/7일 기록</span>
           </div>
-          <div className={styles.statContent}>
-            <span className={styles.statValue}>{diaries.length}</span>
-            <span className={styles.statLabel}>총 일기 수</span>
+          <h1 className={styles.greeting}>
+            {hasWrittenToday ? (
+              <>기록 <span className={styles.highlight}>완료!</span></>
+            ) : (
+              <>오늘, <span className={styles.highlight}>어땠나요?</span></>
+            )}
+          </h1>
+          <p className={styles.subGreeting}>
+            {hasWrittenToday
+              ? "오늘의 마음을 성공적으로 남겼습니다."
+              : "지금 소중한 순간을 AI와 공유하세요."}
+          </p>
+        </div>
+        {!hasWrittenToday ? (
+          <Link href="/write" className={styles.mainWriteBtn}>
+            <PenLine size={20} />
+            <span>일기 쓰기</span>
+            <Sparkles size={18} className={styles.sparkleIcon} />
+          </Link>
+        ) : (
+          <Link href="/calendar" className={`${styles.mainWriteBtn} ${styles.completedBtn}`}>
+            <CheckCircle2 size={20} />
+            <span>기록 확인</span>
+          </Link>
+        )}
+      </section>
+
+      {/* 2. Main Navigation Grid (Bento Style) */}
+      <section className={styles.menuGrid}>
+        <Link href="/calendar" className={`${styles.menuCard} ${styles.calendarCard}`}>
+          <div className={styles.menuIcon}><Calendar size={32} /></div>
+          <div className={styles.menuInfo}>
+            <h3>캘린더</h3>
+            <p>기록의 흐름을 한눈에 확인하세요</p>
+          </div>
+          <div className={styles.miniHeatmap}>
+            {/* 최근 14일 상태를 시각화 (간략히) */}
+            {Array.from({ length: 14 }).map((_, i) => (
+              <div key={i} className={styles.heatmapDot} data-active={i % 3 === 0} />
+            ))}
           </div>
         </Link>
 
-        <div
-          className={`card ${styles.statCard} ${activeTooltip === 'score' ? styles.active : ''}`}
-          onClick={() => handleTooltipToggle('score')}
-        >
-          <div className={styles.statIcon} style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
-            <TrendingUp size={24} />
+        <Link href="/diaries" className={`${styles.menuCard} ${styles.historyCard}`}>
+          <div className={styles.menuIcon}><BookOpen size={32} /></div>
+          <div className={styles.menuInfo}>
+            <h3>전체 일기</h3>
+            <p>쌓여가는 당신의 기록들</p>
           </div>
-          <div className={styles.statContent}>
-            <span className={styles.statValue}>{hasLatest ? getWeightedScore(latestDiary) : '--'}</span>
-            <span className={styles.statLabel}>{hasLatest ? '오늘 종합 점수' : '데이터 로딩 중'}</span>
-          </div>
-          {activeTooltip === 'score' && hasLatest && (
-            <div className={styles.tooltip}>
-              건강, 관계, 자기계발, 업무 지표를 가중치에 따라 합산한 오늘의 전반적인 상태 점수입니다.
-            </div>
-          )}
-        </div>
+          <span className={styles.countBadge}>{diaries.length} entries</span>
+        </Link>
 
-        <div
-          className={`card ${styles.statCard} ${activeTooltip === 'positive' ? styles.active : ''}`}
-          onClick={() => handleTooltipToggle('positive')}
-        >
-          <div className={styles.statIcon} style={{ background: 'linear-gradient(135deg, #ec4899, #db2777)' }}>
-            <Sparkles size={24} />
+        <Link href="/review" className={`${styles.menuCard} ${styles.analysisCard}`}>
+          <div className={styles.menuIcon}><TrendingUp size={32} /></div>
+          <div className={styles.menuInfo}>
+            <h3>기간별 회고</h3>
+            <p>당신의 감정 패턴을 분석합니다</p>
           </div>
-          <div className={styles.statContent}>
-            <span className={styles.statValue}>{hasLatest ? `${latestDiary.analysis.emotionalScore.positive}%` : '--'}</span>
-            <span className={styles.statLabel}>{hasLatest ? '긍정 지수' : '데이터 로딩 중'}</span>
-          </div>
-          {activeTooltip === 'positive' && hasLatest && (
-            <div className={styles.tooltip}>
-              AI가 분석한 일기 내용 중 긍정적인 감정의 비율을 나타냅니다.
-            </div>
-          )}
-        </div>
+          <Zap size={40} className={styles.bgIcon} />
+        </Link>
 
-        <div className={`card ${styles.statCard}`}>
-          <div className={styles.statIcon} style={{ background: 'linear-gradient(135deg, #a78bfa, #7c3aed)' }}>
-            <Moon size={24} />
+        <Link href="/settings" className={`${styles.menuCard} ${styles.settingsCard}`}>
+          <div className={styles.menuIcon}><Settings size={32} /></div>
+          <div className={styles.menuInfo}>
+            <h3>설정</h3>
+            <p>개인화된 AI 동반자 관리</p>
           </div>
-          <div className={styles.statContent}>
-            <span className={styles.statValue}>{avgSleep}h</span>
-            <span className={styles.statLabel}>최근 평균 수면</span>
-          </div>
-        </div>
-      </div>
+        </Link>
+      </section>
 
-      {/* 감정 분포 카드 */}
-      <div className={`card ${styles.emotionCard}`}>
-        <h3 className={styles.emotionTitle}>📊 전체 감정 분포</h3>
-        <div className={styles.emotionGrid}>
-          {Object.entries(emotionStats).map(([key, count]) => {
-            const { Icon, color, fill, label } = emotionLabels[key];
-            return (
-              <div key={key} className={styles.emotionItem}>
-                <span className={styles.emotionEmoji}>
-                  <Icon size={28} color={color} fill={fill} />
-                </span>
-                <span className={styles.emotionCount}>{count}</span>
-                <span className={styles.emotionLabel}>{label}</span>
-                <div className={styles.emotionBar}>
-                  <div
-                    className={styles.emotionBarFill}
-                    style={{
-                      width: totalEmotions > 0 ? `${(count / totalEmotions) * 100}%` : '0%',
-                      background: color // Use the same color defined in labels
-                    }}
-                  />
-                </div>
+      {/* 3. Latest Insights & Recent Activity */}
+      <div className={styles.bottomGrid}>
+        <section className={styles.insightSection}>
+          <h2 className={styles.sectionTitle}>
+            <Sparkles size={20} /> Today's Insight
+          </h2>
+          {latestDiary ? (
+            <div className={`card ${styles.insightCard}`} onClick={() => setSelectedDiary(latestDiary)}>
+              <div className={styles.insightHeader}>
+                <span className={styles.scoreTitle}>AI 종합 점수</span>
+                <span className={styles.scoreValue}>{getWeightedScore(latestDiary)}</span>
               </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className={styles.mainGrid}>
-        <section className={`card ${styles.chartSection}`}>
-          <div className="card-header">
-            <h2 className="card-title">
-              <TrendingUp size={20} />
-              최근 7일 지표 추이
-            </h2>
-          </div>
-          {weeklyChartData.length > 0 ? (
-            <MetricChart
-              data={weeklyChartData}
-              selectedMetrics={['health', 'relationship', 'growth', 'work']}
-              height={280}
-            />
+              <p className={styles.insightSummary}>{latestDiary.analysis.summary}</p>
+              <div className={styles.insightFooter}>
+                <span className={styles.feedbackTag}>
+                  <Heart size={14} /> AI가 드리는 위로 한 마디
+                </span>
+                <ArrowRight size={16} />
+              </div>
+            </div>
           ) : (
-            <div className={styles.noData}>데이터가 없습니다</div>
+            <div className={styles.noDataCard}>
+              <Coffee size={32} />
+              <p>아직 오늘의 기록이 없네요!</p>
+            </div>
           )}
         </section>
 
-        <section className={styles.recentSection}>
+        <section className={styles.recentActivity}>
           <div className={styles.sectionHeader}>
-            <h2 className="card-title">
-              <Calendar size={20} />
-              최근 기록
-            </h2>
-            <Link href="/diaries" className={styles.viewAll}>
-              전체 보기 <ArrowRight size={16} />
-            </Link>
+            <h2 className={styles.sectionTitle}>최근 기록</h2>
+            <Link href="/diaries" className={styles.viewLink}>전체보기</Link>
           </div>
-
-          <div className={styles.diaryList}>
+          <div className={styles.miniDiaryContainer}>
             {recentList.map(diary => (
-              <DiaryCard
-                key={diary.id}
-                diary={diary}
-                onClick={() => setSelectedDiary(diary)}
-              />
+              <div key={diary.id} className={styles.miniDiaryItem} onClick={() => setSelectedDiary(diary)}>
+                <div className={styles.miniDate}>{diary.date.split('-').slice(1).join('.')}</div>
+                <div className={styles.miniContent}>{diary.content}</div>
+                <div className={styles.miniScore}>{getWeightedScore(diary)}</div>
+              </div>
             ))}
           </div>
         </section>
