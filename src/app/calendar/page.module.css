@@ -1,6 +1,7 @@
 .calendarPage {
-    padding: 2rem;
-    max-width: 1000px;
+    padding: 0;
+    width: 100%;
+    height: 100%;
     margin: 0 auto;
     animation: fadeIn 0.5s ease-out;
 }
@@ -19,10 +20,13 @@
 
 .calendarCard {
     background: var(--bg-card);
-    border-radius: 20px;
+    border-radius: 0;
     padding: 2rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    min-height: calc(100vh - 4rem);
+    display: flex;
+    flex-direction: column;
+    box-shadow: none;
+    border: none;
     backdrop-filter: blur(10px);
 }
 
@@ -40,6 +44,15 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.currentMonth:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--accent-primary);
 }
 
 .navButtons {
@@ -70,7 +83,9 @@
 .calendarGrid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 10px;
+    grid-template-rows: auto repeat(6, 1fr);
+    gap: 15px;
+    flex: 1;
 }
 
 .weekday {
@@ -84,10 +99,11 @@
 }
 
 .day {
-    aspect-ratio: 1 / 1;
+    flex: 1;
+    min-height: 100px;
     background: rgba(255, 255, 255, 0.03);
     border-radius: 12px;
-    padding: 0.5rem;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -155,22 +171,144 @@
     opacity: 0.6;
 }
 
+/* Year View Styles */
+.yearViewGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    /* 4x3 그리드 강제 */
+    gap: 15px;
+    flex: 1;
+    padding: 1rem;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    /* PC에서는 스크롤 없이 한눈에 */
+}
+
+.monthCard {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* 영역 밖으로 나가는 요소 차단 */
+    min-width: 0;
+    /* Grid 자식 요소로서의 유연성 확보 */
+    justify-content: center;
+    /* 내부 콘텐츠 중앙 정렬 */
+}
+
+.monthCard:hover {
+    background: rgba(var(--accent-primary-rgb), 0.05);
+    border-color: rgba(var(--accent-primary-rgb), 0.2);
+    transform: translateY(-4px);
+}
+
+.monthTitle {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.miniCalendarGrid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    /* 열 너비 엄격히 제한 */
+    gap: 3px;
+    width: 100%;
+}
+
+.miniDay {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.55rem;
+    color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.miniDay.hasDiary {
+    background: var(--accent-gradient);
+    color: white;
+    font-weight: 700;
+    box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.miniDay.notInMonth {
+    opacity: 0;
+    pointer-events: none;
+}
+
+@media (max-width: 1024px) {
+    .yearViewGrid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
 @media (max-width: 768px) {
     .calendarPage {
-        padding: 0.75rem;
+        padding: 0;
     }
 
     .calendarCard {
-        padding: 0.75rem;
-        border-radius: 12px;
+        padding: 1rem 0.5rem;
+        min-height: calc(100vh - 88px);
+        /* Account for mobile nav */
     }
 
     .calendarGrid {
         gap: 5px;
     }
 
+    .yearViewGrid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        padding: 0.5rem;
+    }
+
+    .monthCard {
+        padding: 0.4rem;
+        border-radius: 10px;
+    }
+
+    .monthTitle {
+        font-size: 0.8rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .miniCalendarGrid {
+        gap: 2px;
+    }
+
+    .miniDay {
+        font-size: 0.45rem;
+        /* 숫자를 다시 보이게 하되 아주 작게 설정 */
+        color: rgba(255, 255, 255, 0.4);
+        /* 평소에는 흐릿하게 */
+        border-radius: 2px;
+    }
+
+    .miniDay.hasDiary {
+        color: white;
+        /* 일기가 있는 날은 선명하게 */
+        font-weight: bold;
+        box-shadow: 0 0 4px var(--accent-glow);
+    }
+
     .day {
-        padding: 2px;
+        min-height: 60px;
+        padding: 4px;
         border-radius: 8px;
     }
 
